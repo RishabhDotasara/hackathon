@@ -75,10 +75,10 @@ const ChatPage: React.FC = () => {
                 <span className="font-semibold">{selectedContact.name}</span>
           </div>
           <div className="flex space-x-2">
-            <button className="p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-blue-600" >
+            <button className="p-2 rounded-full bg-gray-300 text-gray-700 hover:bg-blue-600" >
               <FiVideo size={20} />
             </button>
-            <button className="p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-blue-600">
+            <button className="p-2 rounded-full bg-gray-300 text-gray-700 hover:bg-blue-600">
               <FiPhone size={20} />
             </button>
           </div>
