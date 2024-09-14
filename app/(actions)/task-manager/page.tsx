@@ -1,41 +1,58 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-// Mock data for tasks
-const initialTasks = [
-  { id: 1, title: "Complete project proposal", status: "pending", assignedBy: "John Doe" },
-  { id: 2, title: "Review code changes", status: "in-progress", assignedBy: "Jane Smith" },
-  { id: 3, title: "Prepare presentation slides", status: "completed", assignedBy: "Mike Johnson" },
-  { id: 4, title: "Update documentation", status: "pending", assignedBy: "Sarah Williams" },
-  { id: 5, title: "Fix critical bug", status: "in-progress", assignedBy: "Chris Brown" },
-]
-
+// Define status colors for different task states
 const statusColors = {
-  pending: "bg-red-500 text-white",
-  "in-progress": "bg-yellow-500 text-white",
-  completed: "bg-green-500 text-white",
+  PENDING: "bg-red-500 text-white",
+  INPROGRESS: "bg-yellow-500 text-white",
+  COMPLETED: "bg-green-500 text-white",
+}
+
+// Define corresponding colors for the chart bars
+const chartColors = {
+  PENDING: "#f87171",      // Red
+  INPROGRESS: "#facc15",   // Yellow
+  COMPLETED: "#4ade80",    // Green
 }
 
 export default function HomePage() {
-  const [tasks] = useState(initialTasks)
+  const [tasks, setTasks] = useState([])
 
-  // Prepare data for the chart
+  // Fetch tasks from the backend API
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch('/api/task/getAll') // Update API endpoint to fetch all tasks
+      const data = await response.json()
+      setTasks(data)
+    } catch (error) {
+      console.error("Error fetching tasks:", error)
+    }
+  }
+
+  // Run the fetchTasks function on component mount
+  useEffect(() => {
+    fetchTasks()
+  }, [])
+
+  // Prepare data for the chart (group by task status)
   const chartData = [
-    { status: "Pending", count: tasks.filter(task => task.status === "pending").length },
-    { status: "In Progress", count: tasks.filter(task => task.status === "in-progress").length },
-    { status: "Completed", count: tasks.filter(task => task.status === "completed").length },
+    { status: "PENDING", count: tasks.filter((task:any) => task.status === "PENDING").length },
+    { status: "INPROGRESS", count: tasks.filter((task:any) => task.status === "INPROGRESS").length },
+    { status: "COMPLETED", count: tasks.filter((task:any) => task.status === "COMPLETED").length },
   ]
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Task Management Dashboard</h1>
-      
+
       <div className="grid gap-6 md:grid-cols-2">
+        
+        {/* Card for Task Overview with Bar Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Task Overview</CardTitle>
@@ -47,12 +64,20 @@ export default function HomePage() {
                 <XAxis dataKey="status" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="count" fill="#3b82f6" /> {/* Changed to blue */}
+                <Bar dataKey="count">
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={chartColors[entry.status]}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
+        {/* Card for Task List */}
         <Card>
           <CardHeader>
             <CardTitle>Task List</CardTitle>
@@ -60,13 +85,13 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              {tasks.map(task => (
-                <li key={task.id} className="flex items-center justify-between p-2 bg-secondary rounded-lg">
+              {tasks.map((task:any) => (
+                <li key={task.taskId} className="flex items-center justify-between p-2 bg-secondary rounded-lg">
                   <div>
-                    <Link href={`/task/${task.id}`} className="font-semibold hover:underline">
+                    <Link href={`/task-manager/task/${task.taskId}`} className="font-semibold hover:underline">
                       {task.title}
                     </Link>
-                    <p className="text-sm text-muted-foreground">Assigned by: {task.assignedBy}</p>
+                    <p className="text-sm text-muted-foreground">Assigned by: {task.user?.employeeId}</p>
                   </div>
                   <Badge className={statusColors[task.status]}>
                     {task.status}
