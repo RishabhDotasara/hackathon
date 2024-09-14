@@ -34,8 +34,28 @@ export default function TaskDetails() {
   const [task, setTask] = useState<Task>(); // Initialize as null
   const { id: taskId } = useParams(); // Get dynamic taskId from the route
 
-  const handleStatusChange = (value: any) => {
-    setStatus(value);
+  const handleStatusChange = async (value: any) => {
+    try 
+    {
+      setStatus(value);
+      const response = await fetch('/api/task/status', {
+        method:"POST",
+        body:JSON.stringify({taskId:task?.taskId, status:value})
+      })
+      if(response.ok)
+      {
+        toast({
+          title:"Status Updated"
+        })
+      }
+      
+    }
+    catch(err)
+    {
+      toast({
+        title:"Error updating Status"
+      })
+    }
   };
 
   // Fetch the task details from the API
@@ -91,6 +111,8 @@ export default function TaskDetails() {
     }
   };
 
+ 
+
   if (!task) {
     return (
       <div>
@@ -124,9 +146,9 @@ export default function TaskDetails() {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="INPROGRESS">In Progress</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="PENDING"><span className="bg-red-500 text-white px-2 py-1 rounded-sm">Pending</span></SelectItem>
+                  <SelectItem value="INPROGRESS"><span className="bg-yellow-500 text-white px-2 py-1 rounded-sm">In Progress</span></SelectItem>
+                  <SelectItem value="COMPLETED"><span className="bg-green-500 text-white px-2 py-1 rounded-sm">Completed</span></SelectItem>
                 </SelectContent>
               </Select>
             </div>
