@@ -5,6 +5,7 @@ import { Dashboard } from "@/components/Layout";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import Session from "@/providers/session-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,6 +32,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-white text-black antialiased ">
         <Session>
+          <Toaster/>
           {children}
         </Session>
        

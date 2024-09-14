@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
+import { Loader } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export const description =
   "A login page with two columns. The first column has the login form with email and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image."
@@ -14,21 +16,33 @@ export default function SignUp() {
 
   const [employeeId, setEmployeeId] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const router = useRouter();
 
   const createuser = async ()=>{
     try 
     {
+      setLoading(true)
         fetch("/api/signup", {
           method:"POST", 
           body:JSON.stringify({employeeId, password})
         })
-        .then(response=>response.json())
-        .then((data)=>{
-          console.log("Data")
+        .then(response=>{
+          if (response.status == 200)
+          {
+            setLoading(false);
+            router.push("/task-manager")
+          }
+          else 
+          {
+
+          }
         })
+       
     }
     catch(err)
     {
+      setLoading(false)
       console.log("Error in server!")
     }
   }
@@ -59,8 +73,9 @@ export default function SignUp() {
               </div>
               <Input id="password" type="password" required value={password} onChange={(e)=>{setPassword(e.target.value)}}/>
             </div>
-            <Button type="submit" className="w-full" onClick={()=>{createuser()}}>
+            <Button type="submit" className="w-full" onClick={()=>{createuser()}} disabled={loading}>
                 SignUp
+                {loading && <Loader className="animate-spin ml-2"/>}
             </Button>
            
           </div>
