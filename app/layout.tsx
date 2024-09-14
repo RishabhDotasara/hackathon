@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Dashboard } from "@/components/Layout";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { SessionProvider } from "next-auth/react";
+import Session from "@/providers/session-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,8 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-white text-black antialiased ">
-      
-          <Dashboard>{children}</Dashboard>
+        <Session>
+          {children}
+        </Session>
        
       </body>
     </html>
