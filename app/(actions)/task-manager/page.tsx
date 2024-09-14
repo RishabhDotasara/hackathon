@@ -28,6 +28,7 @@ export default function HomePage() {
   // Fetch tasks from the backend API
   const fetchTasks = async () => {
     try {
+      console.log(session)
       const response = await fetch(`/api/task/getAll?assigneeId=${session.data?.userId}`) // Ensure this endpoint is correct
       const data = await response.json()
       setTasks(data)
@@ -38,8 +39,11 @@ export default function HomePage() {
 
   // Run the fetchTasks function on component mount
   useEffect(() => {
-    fetchTasks()
-  }, [])
+   
+
+      fetchTasks()
+    
+  }, [session])
 
   // Prepare data for the chart (group by task status)
   const chartData = [

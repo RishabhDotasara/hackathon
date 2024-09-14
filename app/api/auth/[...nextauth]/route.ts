@@ -44,11 +44,13 @@ const handler = NextAuth({
     maxAge: 60 * 60 * 24 * 7, // 7 days
     updateAge: 24 * 60 * 60,  // update session every 24 hours
   },
+  secret:process.env.NEXTAUTH_SECRET,
   callbacks: {
     async session({ session, token }) {
       // Add userId to the session object
       if (token?.id) {
         session.userId = token.id;
+        
       }
       return session;
     },
