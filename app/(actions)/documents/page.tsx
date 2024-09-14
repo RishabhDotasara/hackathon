@@ -1,5 +1,9 @@
+'use client';
+
 import { File, FileText, Image, Music, Video } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react";
 
 type Document = {
   id: string;
@@ -8,34 +12,34 @@ type Document = {
   url: string;
 };
 
-const documents: Document[] = [
-  {
-    id: "1",
-    name: "Project Proposal",
-    type: "document",
-    url: "/documents/proposal.pdf",
-  },
-  { id: "2", name: "Team Photo", type: "image", url: "/images/team.jpg" },
-  {
-    id: "3",
-    name: "Presentation Slides",
-    type: "file",
-    url: "/files/presentation.pptx",
-  },
-  {
-    id: "4",
-    name: "Meeting Recording",
-    type: "audio",
-    url: "/audio/meeting.mp3",
-  },
-  { id: "5", name: "Product Demo", type: "video", url: "/videos/demo.mp4" },
-  {
-    id: "6",
-    name: "Financial Report",
-    type: "document",
-    url: "/documents/finance.xlsx",
-  },
-];
+// const documents: Document[] = [
+//   {
+//     id: "1",
+//     name: "Project Proposal",
+//     type: "document",
+//     url: "/documents/proposal.pdf",
+//   },
+//   { id: "2", name: "Team Photo", type: "image", url: "/images/team.jpg" },
+//   {
+//     id: "3",
+//     name: "Presentation Slides",
+//     type: "file",
+//     url: "/files/presentation.pptx",
+//   },
+//   {
+//     id: "4",
+//     name: "Meeting Recording",
+//     type: "audio",
+//     url: "/audio/meeting.mp3",
+//   },
+//   { id: "5", name: "Product Demo", type: "video", url: "/videos/demo.mp4" },
+//   {
+//     id: "6",
+//     name: "Financial Report",
+//     type: "document",
+//     url: "/documents/finance.xlsx",
+//   },
+// ];
 
 const getIcon = (type: Document["type"]) => {
   switch (type) {
@@ -53,6 +57,10 @@ const getIcon = (type: Document["type"]) => {
 };
 
 export default function DocumentList() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const session = useSession();
+
+  console.log(session);
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Documents</h1>
