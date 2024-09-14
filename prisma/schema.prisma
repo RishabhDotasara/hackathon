@@ -46,4 +46,5 @@ model Comment {
   task      Task   @relation(fields: [taskId], references: [taskId])
   authorId  String
   author    User   @relation(fields: [authorId], references: [userId])
+  createdAt DateTime @default(now())
 }

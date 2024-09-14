@@ -16,84 +16,106 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, ClockIcon } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CalendarIcon, ClockIcon, Loader, Loader2, User, User2Icon } from "lucide-react";
+import { useParams } from "next/navigation";
+import { comment } from "postcss";
+import { Comment, Task } from "@prisma/client";
+import { useToast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
 
-// Mock data for a single task
-const mockTask = {
-  id: 1,
-  title: "Complete project proposal",
-  description:
-    "Draft a comprehensive project proposal including timeline, budget, and resource allocation.",
-  status: "pending",
-  assignedBy: "John Doe",
-  comments: [
-    {
-      id: 1,
-      author: "John Doe",
-      text: "How's the progress on this?",
-      timestamp: "2023-06-10T10:00:00Z",
-    },
-    {
-      id: 2,
-      author: "You",
-      text: "I'm working on it. Should be done by tomorrow.",
-      timestamp: "2023-06-10T11:30:00Z",
-    },
-  ],
-};
-
-const statusColors = {
-  pending: "bg-red-500 text-white",
-  "in-progress": "bg-yellow-500 text-white",
-  completed: "bg-green-500 text-white",
-};
-
-export default function TaskDetail() {
-  // const router = useRouter()
-
-  const [task, setTask] = useState(mockTask);
+export default function TaskDetails() {
+  const [status, setStatus] = useState("pending");
+  const [comments, setComments] = useState<any>([]);
   const [newComment, setNewComment] = useState("");
+  const [isAddingComment, setIsAddingComment] = useState(false);
+  const { toast } = useToast();
+  const session = useSession();
+  const [task, setTask] = useState<Task>(); // Initialize as null
+  const { id: taskId } = useParams(); // Get dynamic taskId from the route
 
-  const handleStatusChange = (newStatus: any) => {
-    setTask((prevTask) => ({ ...prevTask, status: newStatus }));
+  const handleStatusChange = (value: any) => {
+    setStatus(value);
   };
 
-  // const handleCommentSubmit = () => {
-  //   if (newComment.trim()) {
-  //     const comment = {
-  //       id: comments.length + 1,
-  //       author: 'Current User',
-  //       content: newComment,
-  //       timestamp: new Date().toISOString(),
-  //     }
-  //     setComments([...comments, comment])
-  //     setNewComment('')
-  //   }
-  // }
+  // Fetch the task details from the API
+  const getTask = async () => {
+    try {
+      const response = await fetch(`/api/task/get?taskId=${taskId}`);
+      if (response.ok) {
+        const taskData = await response.json();
+        console.log(taskData);
+
+        setTask(taskData); // Set the fetched task data
+        setStatus(taskData.status); // Update status from fetched task
+        setComments(taskData.comments); // Set comments from fetched task
+      } else {
+        console.error("Failed to fetch task details.");
+      }
+    } catch (err) {
+      console.log("Error while fetching task:", err);
+    }
+  };
+
+  useEffect(() => {
+    getTask();
+  }, []);
+
+  const handleCommentSubmit = async () => {
+    try {
+      setIsAddingComment(true)
+      const response = await fetch("/api/task/comment/create", {
+        method: "POST",
+        body: JSON.stringify({
+          authorId: session.data?.userId,
+          taskId: task?.taskId,
+          content: newComment.trim(),
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json()
+        console.log(data)
+        setComments([...comments, data.comment])
+        toast({
+          title: "Comment Added!",
+        });
+        setNewComment("")
+        setIsAddingComment(false)
+      }
+    } catch (err) {
+      setIsAddingComment(false)
+      console.log("Error commenting!");
+      toast({
+        title: "Error while Commenting!",
+      });
+    }
+  };
+
+  if (!task) {
+    return (
+      <div>
+        <Loader className="animate-spin"></Loader>
+      </div>
+    ); // Show loading state while task is being fetched
+  }
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            Implement New User Dashboard
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">{task.title}</CardTitle>
           <div className="flex items-center text-sm text-muted-foreground mt-2">
             <CalendarIcon className="mr-2 h-4 w-4" />
-            <span>Due: June 15, 2023</span>
+            <span>Due: {new Date(task.deadline).toLocaleDateString()}</span>
             <ClockIcon className="ml-4 mr-2 h-4 w-4" />
-            <span>Estimated: 3 days</span>
+            <span>Estimated: {task.estimatedTime}</span>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground">
-                Create a new user dashboard that displays key metrics, recent
-                activity, and personalized recommendations. The dashboard should
-                be responsive and optimized for both desktop and mobile views.
-              </p>
+              <p className="text-muted-foreground">{task.description}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Status</h3>
@@ -102,9 +124,9 @@ export default function TaskDetail() {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="INPROGRESS">In Progress</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -118,16 +140,21 @@ export default function TaskDetail() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* {comments.map((comment) => (
-              <div key={comment.id} className="flex space-x-4">
+            {!comments && <h1>No Comments</h1>}
+            {comments.map((comment: Comment) => (
+              <div key={comment.commentId} className="flex space-x-4">
                 <Avatar>
-                  <AvatarFallback>{comment.author[0]}</AvatarFallback>
+                  <AvatarFallback>
+                    <User></User>
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">{comment.author}</p>
-                  <p className="text-sm text-muted-foreground">{comment.content}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {comment.author.employeeId}
+                  </p>
+                  <p className="text-sm text">{comment.content}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(comment.timestamp).toLocaleString()}
+                    {new Date(comment.createdAt).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -141,7 +168,8 @@ export default function TaskDetail() {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
             />
-            <Button>Post Comment</Button>
+            <Button onClick={handleCommentSubmit} disabled={isAddingComment}>Post Comment 
+              {isAddingComment && <Loader2 className="animate-spin ml-2"></Loader2>}</Button>
           </div>
         </CardFooter>
       </Card>

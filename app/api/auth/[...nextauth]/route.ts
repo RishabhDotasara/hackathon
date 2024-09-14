@@ -58,6 +58,22 @@ const handler = NextAuth({
     updateAge: 24 * 60 * 60, // update session every 24 hours
   },
   secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async session({ session, token }) {
+      // Add userId to the session object
+      if (token?.id) {
+        session.userId = token.id;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      // Add userId to the token
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+  },
 });
 
 export { handler as GET, handler as POST };

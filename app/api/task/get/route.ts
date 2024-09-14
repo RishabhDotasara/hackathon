@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get("taskId");
 
+    console.log("Task Id:", taskId)
+
     // If taskId is not provided, return a 400 error
     if (!taskId) {
       return NextResponse.json({ message: "Task ID is required" }, { status: 400 });
@@ -22,7 +24,11 @@ export async function GET(request: NextRequest) {
       include: {
         user: true, // Include the user who created the task
         assignee: true, // Include the user who is assigned to the task
-        comments: true, // Include task comments if needed
+        comments: {
+          include:{
+            author:true
+          }
+        }, // Include task comments if needed
       },
     });
 
