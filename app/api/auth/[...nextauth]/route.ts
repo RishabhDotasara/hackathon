@@ -51,7 +51,8 @@ const handler = NextAuth({
       // Add userId and isAdmin to the session object
       if (token?.id) {
         session.userId = token.id;
-        session.isAdmin = token.isAdmin; // Add isAdmin flag to session
+        session.isAdmin = token.isAdmin;
+        session.username = token.username // Add isAdmin flag to session
       }
       return session;
     },
@@ -59,7 +60,8 @@ const handler = NextAuth({
       // Add userId and isAdmin to the token
       if (user) {
         token.id = user.id;
-        token.isAdmin = user.isAdmin; // Add isAdmin flag to token
+        token.isAdmin = user.isAdmin;
+        token.username = user.employeeId 
       }
       return token;
     }

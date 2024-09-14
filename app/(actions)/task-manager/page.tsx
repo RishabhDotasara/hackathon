@@ -45,6 +45,7 @@ export default function HomePage() {
   const session = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [newTask, setNewTask] = useState(false)
 
   // Fetch tasks from the backend API
   const fetchTasks = async () => {
@@ -75,6 +76,10 @@ export default function HomePage() {
   useEffect(() => {
     fetchTasks();
   }, [session]);
+
+  useEffect(()=>{
+    fetchTasks();
+  },[newTask])
 
   // Prepare data for the chart (group by task status)
   const chartData = useMemo(() => {
@@ -113,7 +118,7 @@ export default function HomePage() {
                 <CardDescription>
                   Your current tasks and their statuses
                 </CardDescription>
-                <TaskDialog trigger={<Button variant="outline">Add Task</Button>}/>
+                <TaskDialog trigger={<Button variant="outline">Add Task</Button>} triggerFunc={setTasks}/>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -142,7 +147,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-4">
-                  {tasks.map((task: any) => (
+                  {tasks.map((task: Task) => (
                     <li
                       key={task.taskId}
                       className="flex items-center justify-between p-2 bg-secondary rounded-lg"
@@ -154,9 +159,11 @@ export default function HomePage() {
                         >
                           {task.title}
                         </Link>
-                        <p className="text-sm text-muted-foreground">
-                          Assigned by: {task.user?.employeeId}
+                        <p className="text-sm text-muted-foreground flex gap-4">
+                          <span>Assigned by: {task.user?.employeeId}</span>
+                          <span>Time Left: {new Date().getDate() - new Date(task?.deadline).getDate()} day(s)</span>
                         </p>
+                        
                       </div>
                       <Badge className={statusColors[task.status]}>
                         {task.status}

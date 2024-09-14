@@ -36,14 +36,14 @@ model Task {
 
   deadline    DateTime
   status      Status
-  comments    Comment[]
+  comments    Comment[] 
 }
 
 model Comment {
   commentId String @id @default(uuid())
   content   String
   taskId    String
-  task      Task   @relation(fields: [taskId], references: [taskId])
+  task      Task   @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
   authorId  String
   author    User   @relation(fields: [authorId], references: [userId])
   createdAt DateTime @default(now())
