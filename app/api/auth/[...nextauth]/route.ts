@@ -25,6 +25,10 @@ const handler = NextAuth({
                         }
                     })
 
+                    if (!user)
+                    {
+                        return null
+                    }
                     prisma.$disconnect();
 
                     const passwordCheck = await bcrypt.compare(credentials?.password as string, user?.password as string)
@@ -46,7 +50,11 @@ const handler = NextAuth({
             }
 
         })
-    ]
+    ],
+    session: {
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        updateAge: 24 * 60 * 60,  // update session every 24 hours
+      },
 })
 
 export {handler as GET, handler as POST}
