@@ -9,17 +9,26 @@ const handler = NextAuth({
       name: "credentials",
       type: "credentials",
       credentials: {
-        employeeId: { label: "EmployeeId", type: "text", placeholder: "EmployeeId" },
-        password: { label: "Password", type: "password", placeholder: "Password" }
+        employeeId: {
+          label: "EmployeeId",
+          type: "text",
+          placeholder: "EmployeeId",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: "Password",
+        },
       },
+
       async authorize(credentials, req) {
         try {
           const prisma = new PrismaClient();
           const id = credentials?.employeeId.toLowerCase();
           const user = await prisma.user.findUnique({
             where: {
-              employeeId: id
-            }
+              employeeId: id,
+            },
           });
 
           if (!user) {
@@ -27,7 +36,10 @@ const handler = NextAuth({
           }
           prisma.$disconnect();
 
-          const passwordCheck = await bcrypt.compare(credentials?.password as string, user?.password as string);
+          const passwordCheck = await bcrypt.compare(
+            credentials?.password as string,
+            user?.password as string
+          );
           if (passwordCheck) {
             return { id: user?.userId as string, user };
           } else {
@@ -37,29 +49,15 @@ const handler = NextAuth({
           console.log("Error in nextauth config.", err);
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
   session: {
+    strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 24 * 60 * 60,  // update session every 24 hours
+    updateAge: 24 * 60 * 60, // update session every 24 hours
   },
-  callbacks: {
-    async session({ session, token }) {
-      // Add userId to the session object
-      if (token?.id) {
-        session.userId = token.id;
-      }
-      return session;
-    },
-    async jwt({ token, user }) {
-      // Add userId to the token
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    }
-  }
+  secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };

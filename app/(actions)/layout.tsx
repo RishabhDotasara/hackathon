@@ -1,14 +1,15 @@
-"use client"
-import Link from "next/link"
+"use client";
+import Link from "next/link";
 import {
   Bell,
   CircleUser,
+  FileText,
   Home,
   Menu,
   Package2,
   Search,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,39 +17,38 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { signOut, useSession } from "next-auth/react"
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { ChatBubbleIcon } from "@radix-ui/react-icons"
-import { FaTasks } from "react-icons/fa"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ChatBubbleIcon } from "@radix-ui/react-icons";
+import { FaTasks } from "react-icons/fa";
+import { useToast } from "@/hooks/use-toast";
 
 export const description =
-  "A products dashboard with a sidebar navigation and a main content area. The dashboard has a header with a search input and a user menu. The sidebar has a logo, navigation links, and a card with a call to action. The main content area shows an empty state with a call to action."
+  "A products dashboard with a sidebar navigation and a main content area. The dashboard has a header with a search input and a user menu. The sidebar has a logo, navigation links, and a card with a call to action. The main content area shows an empty state with a call to action.";
 
-export default function Dashboard({children}:{children:React.ReactNode}) {
-
+export default function Dashboard({ children }: { children: React.ReactNode }) {
   const session = useSession();
   const router = useRouter();
-  const {toast} = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (session.status === "unauthenticated") {
       router.push("/auth/signin");
       toast({
         title: "Please Login Again!",
-        description: "Session Expired!"
+        description: "Session Expired!",
       });
-    }   
+    }
   }, [session.status, router]);
 
   const handleLogOut = async () => {
     try {
-      await signOut({ redirect: false });  // Wait for signOut to complete
-      router.push("/auth/signin");  // Redirect to sign-in page
+      await signOut({ redirect: false }); // Wait for signOut to complete
+      router.push("/auth/signin"); // Redirect to sign-in page
       toast({
         title: "Logged Out",
         description: "You have successfully logged out.",
@@ -60,9 +60,10 @@ export default function Dashboard({children}:{children:React.ReactNode}) {
         variant: "destructive",
       });
     }
-  }
+  };
+  console.log(session);
 
-  return (      
+  return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-background md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
@@ -91,6 +92,13 @@ export default function Dashboard({children}:{children:React.ReactNode}) {
               >
                 <ChatBubbleIcon className="h-4 w-4" />
                 Chats
+              </Link>
+              <Link
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                href={"/documents"}
+              >
+                <FileText className="h-4 w-4" />
+                Documents
               </Link>
             </nav>
           </div>
@@ -169,13 +177,11 @@ export default function Dashboard({children}:{children:React.ReactNode}) {
           </DropdownMenu>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-          <div
-            className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm"
-          >
+          <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm">
             {children}
           </div>
         </main>
       </div>
     </div>
-  )
+  );
 }
