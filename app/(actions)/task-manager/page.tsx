@@ -5,6 +5,7 @@ import Link from "next/link"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useSession } from "next-auth/react"
 
 // Define status colors for different task states
 const statusColors = {
@@ -22,11 +23,12 @@ const chartColors = {
 
 export default function HomePage() {
   const [tasks, setTasks] = useState([])
+  const session = useSession();
 
   // Fetch tasks from the backend API
   const fetchTasks = async () => {
     try {
-      const response = await fetch('/api/task/getAll') // Update API endpoint to fetch all tasks
+      const response = await fetch(`/api/task/getAll?assigneeId=${session.data?.userId}`) // Ensure this endpoint is correct
       const data = await response.json()
       setTasks(data)
     } catch (error) {

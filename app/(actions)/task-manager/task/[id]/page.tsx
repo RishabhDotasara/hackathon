@@ -1,111 +1,134 @@
-"use client"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+'use client'
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { CalendarIcon, ClockIcon } from 'lucide-react'
+import { useParams, useSearchParams } from 'next/navigation'
 
-// Mock data for a single task
-const mockTask = {
-  id: 1,
-  title: "Complete project proposal",
-  description: "Draft a comprehensive project proposal including timeline, budget, and resource allocation.",
-  status: "pending",
-  assignedBy: "John Doe",
-  comments: [
-    { id: 1, author: "John Doe", text: "How's the progress on this?", timestamp: "2023-06-10T10:00:00Z" },
-    { id: 2, author: "You", text: "I'm working on it. Should be done by tomorrow.", timestamp: "2023-06-10T11:30:00Z" },
-  ]
-}
+export default function TaskDetails() {
+  const [status, setStatus] = useState('pending')
+  const [comments, setComments] = useState([
+    { id: 1, author: 'John Doe', content: 'This task looks challenging.', timestamp: '2023-06-10T14:30:00Z' },
+    { id: 2, author: 'Jane Smith', content: 'I think we can finish this by Friday.', timestamp: '2023-06-11T09:15:00Z' },
+  ])
+  const [newComment, setNewComment] = useState('')
 
-const statusColors = {
-  pending: "bg-red-500 text-white",
-  "in-progress": "bg-yellow-500 text-white",
-  completed: "bg-green-500 text-white",
-}
+  const [task, setTask] = useState({})
+  const searchParams = useParams();
 
-export default function TaskDetail() {
-  const router = useRouter()
-        
-  const [task, setTask] = useState(mockTask)
-  const [newComment, setNewComment] = useState("")
 
-  const handleStatusChange = (newStatus) => {
-    setTask(prevTask => ({ ...prevTask, status: newStatus }))
+  const handleStatusChange = (value) => {
+    setStatus(value)
   }
+
+  const getTask = async ()=>{
+    try 
+    {
+      fetch(`/api/task/get?taskId=${searchParams.id}`)
+      .then(async (response)=>{
+        if (response.ok)
+        {
+          const json = await response.json();
+          setTask(json)
+        }
+      })
+    }
+    catch(err)
+    {
+      console.log("Error while fetching task.")
+    }
+  }
+
+  useEffect(()=>{
+    console.log(searchParams)
+  },[])
 
   const handleCommentSubmit = () => {
     if (newComment.trim()) {
-      const newCommentObj = {
-        id: task.comments.length + 1,
-        author: "You",
-        text: newComment,
-        timestamp: new Date().toISOString()
+      const comment = {
+        id: comments.length + 1,
+        author: 'Current User',
+        content: newComment,
+        timestamp: new Date().toISOString(),
       }
-      setTask(prevTask => ({
-        ...prevTask,
-        comments: [...prevTask.comments, newCommentObj]
-      }))
-      setNewComment("")
+      setComments([...comments, comment])
+      setNewComment('')
     }
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 max-w-4xl">
       <Card>
         <CardHeader>
-          <CardTitle>{task.title}</CardTitle>
-          <CardDescription>Assigned by: {task.assignedBy}</CardDescription>
+          <CardTitle className="text-2xl font-bold">Implement New User Dashboard</CardTitle>
+          <div className="flex items-center text-sm text-muted-foreground mt-2">
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            <span>Due: June 15, 2023</span>
+            <ClockIcon className="ml-4 mr-2 h-4 w-4" />
+            <span>Estimated: 3 days</span>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p>{task.description}</p>
-          
-          <div className="flex items-center space-x-2">
-            <span>Status:</span>
-            <Select value={task.status} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">
-                  <Badge className={statusColors.pending}>Pending</Badge>
-                </SelectItem>
-                <SelectItem value="in-progress">
-                  <Badge className={statusColors["in-progress"]}>In Progress</Badge>
-                </SelectItem>
-                <SelectItem value="completed">
-                  <Badge className={statusColors.completed}>Completed</Badge>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Description</h3>
+              <p className="text-muted-foreground">
+                Create a new user dashboard that displays key metrics, recent activity, and personalized recommendations. 
+                The dashboard should be responsive and optimized for both desktop and mobile views.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Status</h3>
+              <Select onValueChange={handleStatusChange} defaultValue={status}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div>
-            <h3 className="font-semibold mb-2">Comments:</h3>
-            <ul className="space-y-2">
-              {task.comments.map(comment => (
-                <li key={comment.id} className="bg-secondary p-2 rounded">
-                  <p className="font-semibold">{comment.author}</p>
-                  <p>{comment.text}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(comment.timestamp).toLocaleString()}</p>
-                </li>
-              ))}
-            </ul>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Comments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <div key={comment.id} className="flex space-x-4">
+                <Avatar>
+                  <AvatarFallback>{comment.author[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium">{comment.author}</p>
+                  <p className="text-sm text-muted-foreground">{comment.content}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(comment.timestamp).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div>
+        </CardContent>
+        <CardFooter>
+          <div className="w-full space-y-2">
             <Textarea
               placeholder="Add a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="mb-2"
             />
-            <Button onClick={handleCommentSubmit}>Add Comment</Button>
+            <Button onClick={handleCommentSubmit}>Post Comment</Button>
           </div>
-        </CardContent>
+        </CardFooter>
       </Card>
     </div>
   )

@@ -2,14 +2,14 @@ import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const prisma = new PrismaClient();
+
   try {
-    const prisma = new PrismaClient();
-    
     // Extract taskId from the query params
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get("taskId");
 
-    // If taskId is not provided
+    // If taskId is not provided, return a 400 error
     if (!taskId) {
       return NextResponse.json({ message: "Task ID is required" }, { status: 400 });
     }
@@ -26,13 +26,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // If the task is not found, return a 404 error
     if (!task) {
       return NextResponse.json({ message: "Task not found" }, { status: 404 });
     }
 
+    // Return the fetched task
     return NextResponse.json(task, { status: 200 });
   } catch (err) {
-    console.log("ERROR fetching task:", err);
+    console.error("ERROR fetching task:", err);
     return NextResponse.json({ message: "Error fetching task" }, { status: 500 });
+  } finally {
+    // Ensure Prisma is properly disconnected
+    await prisma.$disconnect();
   }
 }
