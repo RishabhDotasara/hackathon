@@ -26,28 +26,43 @@ import { useToast } from "@/hooks/use-toast";
 import TaskDialog from "@/components/add-task";
 import { Button } from "@/components/ui/button";
 
-// Define status colors for different task states
 const statusColors = {
   PENDING: "bg-red-500 text-white",
   INPROGRESS: "bg-yellow-500 text-white",
   COMPLETED: "bg-green-500 text-white",
 };
 
-// Define corresponding colors for the chart bars
 const chartColors = {
-  PENDING: "#f87171", // Red
-  INPROGRESS: "#facc15", // Yellow
-  COMPLETED: "#4ade80", // Green
+  PENDING: "#f87171",
+  INPROGRESS: "#facc15",
+  COMPLETED: "#4ade80",
 };
+
+interface User {
+  id: number;
+  name: string;
+}
 
 export default function HomePage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const session = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [newTask, setNewTask] = useState(false)
+  const [newTask, setNewTask] = useState(false);
 
-  // Fetch tasks from the backend API
+  // interface Task {
+  //   id: number
+  //   title: string
+  //   status: "PENDING" | "INPROGRESS" | "COMPLETED"
+  //   userId: number
+  // }
+
+  // export default function Component() {
+  //   const [tasks, setTasks] = useState<Task[]>([])
+  //   const [users, setUsers] = useState<User[]>([])
+  //   const [selectedUser, setSelectedUser] = useState<string>("")
+  //   const [isLoading, setIsLoading] = useState<boolean>(true)
+
   const fetchTasks = async () => {
     try {
       setIsLoading(true);
@@ -56,9 +71,7 @@ export default function HomePage() {
         "/api/task/getAll",
         `/api/task/getAll?assigneeId=${session.data?.userId}`,
       ];
-      const response = await fetch(
-        session.data?.isAdmin ? urls[0] : urls[1]
-      ); // Ensure this endpoint is correct
+      const response = await fetch(session.data?.isAdmin ? urls[0] : urls[1]); // Ensure this endpoint is correct
       const data = await response.json();
       console.log(data);
       setIsLoading(false);
@@ -72,12 +85,9 @@ export default function HomePage() {
     }
   };
 
-  // Run the fetchTasks function on component mount
   useEffect(() => {
     fetchTasks();
-  }, [session]);  
-
-
+  }, [session]);
 
   // Prepare data for the chart (group by task status)
   const chartData = useMemo(() => {
@@ -159,9 +169,13 @@ export default function HomePage() {
                         </Link>
                         <p className="text-sm text-muted-foreground flex gap-4">
                           <span>Assigned by: {task.user?.employeeId}</span>
-                          <span>Time Left: {-new Date().getDate() + new Date(task?.deadline).getDate()} day(s)</span>
+                          <span>
+                            Time Left:{" "}
+                            {-new Date().getDate() +
+                              new Date(task?.deadline).getDate()}{" "}
+                            day(s)
+                          </span>
                         </p>
-                        
                       </div>
                       <Badge className={statusColors[task.status]}>
                         {task.status}

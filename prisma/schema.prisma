@@ -59,3 +59,11 @@ model Comment {
   author    User   @relation(fields: [authorId], references: [userId])
   createdAt DateTime @default(now())
 }
+
+
+model Message {
+  id        Int     @id @default(autoincrement())
+  content   String
+  sender    String
+  createdAt  DateTime @default(now())
+} 

@@ -9,22 +9,42 @@ export async function GET(request: Request) {
 
   try {
     if (teamId) {
+      // Fetch a specific team by ID with members and their tasks
       const team = await prisma.team.findUnique({
         where: { teamId },
-        include: { members: true, tasks: true },
+        include: {
+          members: {
+            include: {
+              tasks: true, // Include tasks for each member
+            },
+          },
+          tasks: true, // Include tasks for the team
+        },
       });
-      await prisma.$disconnect();
       return team
         ? NextResponse.json(team, { status: 200 })
         : NextResponse.json({ message: "Team not found" }, { status: 404 });
     } else {
-      const teams = await prisma.team.findMany({ include: { members: true, tasks: true } });
-      await prisma.$disconnect();
+      // Fetch all teams with members and their tasks
+      const teams = await prisma.team.findMany({
+        include: {
+          members: {
+            include: {
+              tasks: true, // Include tasks for each member
+            },
+          },
+          tasks: true, // Include tasks for the team
+        },
+      });
       return NextResponse.json(teams, { status: 200 });
     }
   } catch (err) {
     console.error("ERROR fetching teams:", err);
+    return NextResponse.json(
+      { message: "Error fetching teams" },
+      { status: 500 }
+    );
+  } finally {
     await prisma.$disconnect();
-    return NextResponse.json({ message: "Error fetching teams" }, { status: 500 });
   }
 }
