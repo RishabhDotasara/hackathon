@@ -215,7 +215,7 @@ export default function TaskDetails() {
                   </p>
                 </div>
               </div>
-            ))}
+            ))} */}
           </div>
         </CardContent>
         <CardFooter>

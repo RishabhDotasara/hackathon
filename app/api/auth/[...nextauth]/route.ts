@@ -9,17 +9,26 @@ const handler = NextAuth({
       name: "credentials",
       type: "credentials",
       credentials: {
-        employeeId: { label: "EmployeeId", type: "text", placeholder: "EmployeeId" },
-        password: { label: "Password", type: "password", placeholder: "Password" }
+        employeeId: {
+          label: "EmployeeId",
+          type: "text",
+          placeholder: "EmployeeId",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: "Password",
+        },
       },
+
       async authorize(credentials, req) {
         try {
           const prisma = new PrismaClient();
           const id = credentials?.employeeId.toLowerCase();
           const user = await prisma.user.findUnique({
             where: {
-              employeeId: id
-            }
+              employeeId: id,
+            },
           });
 
           if (!user) {
@@ -38,12 +47,13 @@ const handler = NextAuth({
           console.log("Error in nextauth config.", err);
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
   session: {
+    strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 24 * 60 * 60,  // update session every 24 hours
+    updateAge: 24 * 60 * 60, // update session every 24 hours
   },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
@@ -64,8 +74,8 @@ const handler = NextAuth({
         token.username = user.employeeId 
       }
       return token;
-    }
-  }
+    },
+  },
 });
 
 export { handler as GET, handler as POST };
