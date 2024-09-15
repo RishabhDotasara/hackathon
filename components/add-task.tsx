@@ -87,7 +87,7 @@ const handleSubmit = async (event: React.FormEvent) => {
       toast({
         title: "Task Created Successfully!",
       });
-      triggerFunc([])
+      triggerFunc("")
       setOpen(false);
       setTitle('');
       setDescription('');

@@ -75,11 +75,9 @@ export default function HomePage() {
   // Run the fetchTasks function on component mount
   useEffect(() => {
     fetchTasks();
-  }, [session]);
+  }, [session]);  
 
-  useEffect(()=>{
-    fetchTasks();
-  },[newTask])
+
 
   // Prepare data for the chart (group by task status)
   const chartData = useMemo(() => {
@@ -161,7 +159,7 @@ export default function HomePage() {
                         </Link>
                         <p className="text-sm text-muted-foreground flex gap-4">
                           <span>Assigned by: {task.user?.employeeId}</span>
-                          <span>Time Left: {new Date().getDate() - new Date(task?.deadline).getDate()} day(s)</span>
+                          <span>Time Left: {-new Date().getDate() + new Date(task?.deadline).getDate()} day(s)</span>
                         </p>
                         
                       </div>
