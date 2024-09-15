@@ -1,172 +1,198 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useSession } from "next-auth/react";
+import { Loader } from "lucide-react";
+import { Task } from "@prisma/client";
+import { useToast } from "@/hooks/use-toast";
+import TaskDialog from "@/components/add-task";
+import { Button } from "@/components/ui/button";
 
 const statusColors = {
   PENDING: "bg-red-500 text-white",
   INPROGRESS: "bg-yellow-500 text-white",
   COMPLETED: "bg-green-500 text-white",
-}
+};
 
 const chartColors = {
   PENDING: "#f87171",
   INPROGRESS: "#facc15",
   COMPLETED: "#4ade80",
-}
+};
 
 interface User {
-  id: number
-  name: string
+  id: number;
+  name: string;
 }
 
-interface Task {
-  id: number
-  title: string
-  status: "PENDING" | "INPROGRESS" | "COMPLETED"
-  userId: number
-}
+export default function HomePage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const session = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const [newTask, setNewTask] = useState(false);
 
-export default function Component() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [selectedUser, setSelectedUser] = useState<string>("")
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  // interface Task {
+  //   id: number
+  //   title: string
+  //   status: "PENDING" | "INPROGRESS" | "COMPLETED"
+  //   userId: number
+  // }
 
-  const fetchUsers = async () => {
+  // export default function Component() {
+  //   const [tasks, setTasks] = useState<Task[]>([])
+  //   const [users, setUsers] = useState<User[]>([])
+  //   const [selectedUser, setSelectedUser] = useState<string>("")
+  //   const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  const fetchTasks = async () => {
     try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/users')
-      const data = await response.json()
-      const formattedUsers = data.map((user: any) => ({ id: user.id.toString(), name: user.name }))
-      setUsers(formattedUsers)
-      if (formattedUsers.length > 0) {
-        setSelectedUser(formattedUsers[0].id)
-      }
+      setIsLoading(true);
+      console.log(session);
+      const urls = [
+        "/api/task/getAll",
+        `/api/task/getAll?assigneeId=${session.data?.userId}`,
+      ];
+      const response = await fetch(session.data?.isAdmin ? urls[0] : urls[1]); // Ensure this endpoint is correct
+      const data = await response.json();
+      console.log(data);
+      setIsLoading(false);
+      setTasks(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching users:", error)
+      console.error("Error fetching tasks:", error);
+      toast({
+        title: "Error, please reload the page.",
+      });
+      setIsLoading(false);
     }
-  }
-
-  const fetchTasks = async (userId: string) => {
-    setIsLoading(true)
-    try {
-      const response = await fetch(`https://jsonplaceholder.typicode.com/todos?userId=${userId}`)
-      const data = await response.json()
-      const formattedTasks = data.map((task: any) => ({
-        id: task.id,
-        title: task.title,
-        status: task.completed ? "COMPLETED" : Math.random() > 0.5 ? "INPROGRESS" : "PENDING",
-        userId: task.userId,
-      }))
-      setTasks(formattedTasks)
-    } catch (error) {
-      console.error("Error fetching tasks:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  };
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    fetchTasks();
+  }, [session]);
 
-  useEffect(() => {
-    if (selectedUser) {
-      fetchTasks(selectedUser)
-    }
-  }, [selectedUser])
-
-  const chartData = [
-    { status: "PENDING", count: tasks.filter((task) => task.status === "PENDING").length },
-    { status: "INPROGRESS", count: tasks.filter((task) => task.status === "INPROGRESS").length },
-    { status: "COMPLETED", count: tasks.filter((task) => task.status === "COMPLETED").length },
-  ]
+  // Prepare data for the chart (group by task status)
+  const chartData = useMemo(() => {
+    return [
+      {
+        status: "PENDING",
+        count: tasks.filter((task: any) => task.status === "PENDING").length,
+      },
+      {
+        status: "INPROGRESS",
+        count: tasks.filter((task: any) => task.status === "INPROGRESS").length,
+      },
+      {
+        status: "COMPLETED",
+        count: tasks.filter((task: any) => task.status === "COMPLETED").length,
+      },
+    ];
+  }, [tasks]);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Task Management Dashboard</h1>
+    <>
+      {isLoading && (
+        <div>
+          <Loader className="animate-spin" />
+        </div>
+      )}
+      {!isLoading && (
+        <div className="container mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-6">Task Management Dashboard</h1>
 
-      <div className="mb-6">
-        <Select value={selectedUser} onValueChange={setSelectedUser}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select a user" />
-          </SelectTrigger>
-          <SelectContent>
-            {users.map((user) => (
-              <SelectItem key={user.id} value={user.id.toString()}>
-                {user.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Card for Task Overview with Bar Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Task Overview</CardTitle>
+                <CardDescription>
+                  Your current tasks and their statuses
+                </CardDescription>
+                {session.data?.isAdmin && (
+                  <TaskDialog
+                    trigger={<Button variant="outline">Add Task</Button>}
+                    triggerFunc={setTasks}
+                  />
+                )}{" "}
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="status" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count">
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={chartColors[entry.status]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Task Overview</CardTitle>
-            <CardDescription>Current tasks and their statuses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center items-center h-[300px]">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <XAxis dataKey="status" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count">
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={chartColors[entry.status as keyof typeof chartColors]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Task List</CardTitle>
-            <CardDescription>Tasks assigned to the selected user</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center items-center h-[300px]">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <ul className="space-y-4">
-                {tasks.map((task) => (
-                  <li key={task.id} className="flex items-center justify-between p-2 bg-secondary rounded-lg">
-                    <div>
-                      <Link href={`/task-manager/task/${task.id}`} className="font-semibold hover:underline">
-                        {task.title}
-                      </Link>
-                      <p className="text-sm text-muted-foreground">Task ID: {task.id}</p>
-                    </div>
-                    <Badge className={statusColors[task.status]}>
-                      {task.status}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
+            {/* Card for Task List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Task List</CardTitle>
+                <CardDescription>Tasks To Work On</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-4">
+                  {tasks.map((task: Task) => (
+                    <li
+                      key={task.taskId}
+                      className="flex items-center justify-between p-2 bg-secondary rounded-lg"
+                    >
+                      <div>
+                        <Link
+                          href={`/task-manager/task/${task.taskId}`}
+                          className="font-semibold hover:underline"
+                        >
+                          {task.title}
+                        </Link>
+                        <p className="text-sm text-muted-foreground flex gap-4">
+                          <span>Assigned by: {task.user?.employeeId}</span>
+                          <span>
+                            Time Left:{" "}
+                            {-new Date().getDate() +
+                              new Date(task?.deadline).getDate()}{" "}
+                            day(s)
+                          </span>
+                        </p>
+                      </div>
+                      <Badge className={statusColors[task.status]}>
+                        {task.status}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
