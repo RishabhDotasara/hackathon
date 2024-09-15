@@ -37,7 +37,7 @@ export default function Login() {
       } else {
         console.log("Successfully signed in!");
         setLoading(false)
-        router.push("/task-manager")
+        router.push("/")
       }
     } catch (error) {
       console.error("Sign-in error", error);

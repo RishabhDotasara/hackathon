@@ -86,25 +86,11 @@ export default function Dashboard({children}:{children:React.ReactNode}) {
                 Task Manager
               </Link>
               <Link
-                href="/leaderBoard"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-              >
-                <FaTasks className="h-4 w-4" />
-                Leader Board
-              </Link>
-              <Link
                 href="/chats"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
               >
                 <ChatBubbleIcon className="h-4 w-4" />
                 Chats
-              </Link>
-              <Link
-                href="/teams"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-              >
-                <FaPeopleCarry className="h-4 w-4" />
-                Teams
               </Link>
             </nav>
           </div>
