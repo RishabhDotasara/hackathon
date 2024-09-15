@@ -32,8 +32,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-white text-black antialiased ">
         <Session>
+          <ThemeProvider>
+
           <Toaster/>
           {children}
+          </ThemeProvider>
         </Session>
        
       </body>

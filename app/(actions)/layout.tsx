@@ -23,7 +23,7 @@ import { signOut, useSession } from "next-auth/react"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ChatBubbleIcon } from "@radix-ui/react-icons"
-import { FaTasks } from "react-icons/fa"
+import { FaPeopleCarry, FaTasks } from "react-icons/fa"
 import { useToast } from "@/hooks/use-toast"
 
 export const description =
@@ -99,6 +99,13 @@ export default function Dashboard({children}:{children:React.ReactNode}) {
                 <ChatBubbleIcon className="h-4 w-4" />
                 Chats
               </Link>
+              <Link
+                href="/teams"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <FaPeopleCarry className="h-4 w-4" />
+                Teams
+              </Link>
             </nav>
           </div>
           <div className="mt-auto p-4">
@@ -166,10 +173,6 @@ export default function Dashboard({children}:{children:React.ReactNode}) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-background">
-              <DropdownMenuLabel>{JSON.stringify(session)}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
             </DropdownMenuContent>

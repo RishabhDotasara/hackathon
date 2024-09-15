@@ -15,6 +15,7 @@ model User {
   tasks     Task[]  @relation("assignedTasks")
   createdTasks Task[] @relation("createdTasks")
   comments  Comment[]
+  
 }
 
 enum Status {
@@ -36,14 +37,26 @@ model Task {
 
   deadline    DateTime
   status      Status
-  comments    Comment[]
+  teamId  String? 
+  
+  comments    Comment[] 
 }
+
 
 model Comment {
   commentId String @id @default(uuid())
   content   String
   taskId    String
-  task      Task   @relation(fields: [taskId], references: [taskId])
+  task      Task   @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
   authorId  String
   author    User   @relation(fields: [authorId], references: [userId])
+  createdAt DateTime @default(now())
 }
+
+
+model Message {
+  id        Int     @id @default(autoincrement())
+  content   String
+  sender    String
+  createdAt  DateTime @default(now())
+} 
