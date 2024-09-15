@@ -27,6 +27,8 @@ import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import { FaTasks } from "react-icons/fa";
 import { useToast } from "@/hooks/use-toast";
 
+import "../globals.css";
+
 export const description =
   "A products dashboard with a sidebar navigation and a main content area. The dashboard has a header with a search input and a user menu. The sidebar has a logo, navigation links, and a card with a call to action. The main content area shows an empty state with a call to action.";
 
@@ -109,7 +111,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-muted px-4 lg:h-[60px] lg:px-6">
+        <header className="flex h-14 items-center gap-4 border-b bg-white px-4 lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -143,6 +145,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                 >
                   <ChatBubbleIcon className="h-5 w-5" />
                   Chats
+                </Link>
+                <Link
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                  href={"/documents"}
+                >
+                  <FileText className="h-4 w-4" />
+                  Documents
                 </Link>
               </nav>
             </SheetContent>
