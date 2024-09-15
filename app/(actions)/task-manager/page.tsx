@@ -116,7 +116,7 @@ export default function HomePage() {
                 <CardDescription>
                   Your current tasks and their statuses
                 </CardDescription>
-                <TaskDialog trigger={<Button variant="outline">Add Task</Button>} triggerFunc={setTasks}/>
+                {session.data?.isAdmin && <TaskDialog trigger={<Button variant="outline">Add Task</Button>} triggerFunc={setTasks}/>}
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
