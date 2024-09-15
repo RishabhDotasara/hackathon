@@ -37,8 +37,8 @@ model Task {
 
   deadline    DateTime
   status      Status
-  teamId String 
-  team Team @relation(fields: [teamId], references: [teamId])
+  teamId  String? 
+  team Team? @relation(fields: [teamId], references: [teamId])
   comments    Comment[] 
 }
 
