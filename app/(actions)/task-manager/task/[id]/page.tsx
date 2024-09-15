@@ -164,7 +164,7 @@ export default function TaskDetails() {
             <CalendarIcon className="mr-2 h-4 w-4" />
             <span>Due: {new Date(task.deadline).toLocaleDateString()}</span>
             <ClockIcon className="ml-4 mr-2 h-4 w-4" />
-            <span>Estimated: {new Date().getDate() - new Date(task.deadline).getDate()} day(s)</span>
+            <span>Estimated: {-new Date().getDate() + new Date(task.deadline).getDate()} day(s)</span>
           </div>
           
         </CardHeader>

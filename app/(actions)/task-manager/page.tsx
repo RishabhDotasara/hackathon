@@ -168,7 +168,7 @@ export default function HomePage() {
                           {task.title}
                         </Link>
                         <p className="text-sm text-muted-foreground flex gap-4">
-                          <span>Assigned by: {task.user?.employeeId}</span>
+                          <span>Assigned to: {task.assignee.employeeId}</span>
                           <span>
                             Time Left:{" "}
                             {-new Date().getDate() +
