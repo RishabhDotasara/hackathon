@@ -5,23 +5,31 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const assigneeId = searchParams.get("assigneeId");
 
-  if (!assigneeId) {
-    return NextResponse.json({ message: "Assignee ID is required" }, { status: 400 });
-  }
-
   try {
     const prisma = new PrismaClient();
-    
+    let tasks:any = [];
     // Fetch tasks assigned to the specified assignee
-    const tasks = await prisma.task.findMany({
-      where: {
-        assigneeId: assigneeId,
-      },
-      include: {
-        user: true, 
-        assignee: true, 
-      },
-    });
+    if (assigneeId)
+    {
+       tasks = await prisma.task.findMany({
+        where: {
+          assigneeId: assigneeId,
+        },
+        include: {
+          user: true, 
+          assignee: true, 
+        },
+      });
+    }
+    else 
+    {
+      tasks = await prisma.task.findMany({
+        include: {
+          user: true, 
+          assignee: true, 
+        },
+      });
+    }
 
     await prisma.$disconnect();
 

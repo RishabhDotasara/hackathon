@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FiVideo, FiPhone, FiSend, FiPaperclip, FiChevronDown, FiUser } from 'react-icons/fi'
 import { Button } from "@/components/ui/button"
 import {
@@ -10,16 +10,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import io,{ Socket } from "socket.io-client"
+
+
+const socket: Socket = io('http://localhost:3000')
+
 
 interface Contact {
   id: number
   name: string
   avatar: string
 }
+interface Message{
+  id: number
+  sender: string
+  content: string
+}
 
 export default function ChatPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [message, setMessage] = useState('')
+  const [messages, setMessages] = useState<Message[]>([])
 
   const contacts: Contact[] = [
     { id: 1, name: 'John Doe', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
@@ -32,10 +43,29 @@ export default function ChatPage() {
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (message.trim()) {
-      console.log('Sending message:', message)
+      socket.emit('message',{
+        sender:selectedContact?.name || 'Anonymous',
+        content : message
+      })
+      setMessages([...messages,{
+        id:Date.now(),
+        sender: 'Me',
+        content: message
+      }])
       setMessage('')
     }
   }
+
+  useEffect(() =>{
+      socket.on('message',(data:any) =>{
+        setMessages((prevMessages) => [...prevMessages,data])
+      })
+
+      return () => {
+        socket.off('message')
+        socket.disconnect()
+      }
+  },[])
 
   return (
     <div className="flex flex-col h-full w-full bg-gray-100">
@@ -78,23 +108,20 @@ export default function ChatPage() {
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {selectedContact ? (
-          <>
-            <div className="flex justify-end">
-              <div className="bg-primary text-primary-foreground rounded-lg p-3 max-w-xs lg:max-w-md">
-                Hey there! How's it going?
-              </div>
-            </div>
-            <div className="flex justify-start">
-              <div className="bg-secondary text-secondary-foreground rounded-lg p-3 max-w-xs lg:max-w-md">
-                Hi! I'm doing great, thanks for asking. How about you?
-              </div>
-            </div>
-          </>
-        ) : (
+         messages.map((msg) =>(
+          <div key={msg.id} className={`flex ${msg.sender === 'Me' ? 'justify-end' : 'justify-start'}`}>
+          <div className={`${msg.sender === 'Me' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'} rounded-lg p-3 max-w-xs lg:max-w-md`}>
+            <p><strong>{msg.sender}</strong></p>
+            <p>{msg.content}</p>
+          </div>
+          </div>
+         )
+        ) ): (
           <div className="flex items-center justify-center h-full">
             <p className="text-muted-foreground">No chat selected</p>
           </div>
         )}
+
       </div>
 
       {/* Message Input */}

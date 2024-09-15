@@ -34,14 +34,12 @@ const handler = NextAuth({
           if (!user) {
             return null;
           }
-          prisma.$disconnect();
 
-          const passwordCheck = await bcrypt.compare(
-            credentials?.password as string,
-            user?.password as string
-          );
+          const passwordCheck = await bcrypt.compare(credentials?.password as string, user?.password as string);
+          prisma.$disconnect();
+          
           if (passwordCheck) {
-            return { id: user?.userId as string, user };
+            return { id: user.userId, isAdmin: user.isAdmin, user }; // Include isAdmin in returned user data
           } else {
             return null;
           }
@@ -60,16 +58,20 @@ const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async session({ session, token }) {
-      // Add userId to the session object
+      // Add userId and isAdmin to the session object
       if (token?.id) {
         session.userId = token.id;
+        session.isAdmin = token.isAdmin;
+        session.username = token.username // Add isAdmin flag to session
       }
       return session;
     },
     async jwt({ token, user }) {
-      // Add userId to the token
+      // Add userId and isAdmin to the token
       if (user) {
         token.id = user.id;
+        token.isAdmin = user.isAdmin;
+        token.username = user.employeeId 
       }
       return token;
     },

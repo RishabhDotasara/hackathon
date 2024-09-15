@@ -89,6 +89,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                 Task Manager
               </Link>
               <Link
+                href="/leaderBoard"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <FaTasks className="h-4 w-4" />
+                Leader Board
+              </Link>
+              <Link
                 href="/chats"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
               >
@@ -176,10 +183,6 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-background">
-              <DropdownMenuLabel>{JSON.stringify(session)}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
