@@ -34,7 +34,7 @@ export default function DocumentEditor({ params }: { params: { id: string } }) {
       return (
         <iframe
           src={document.url}
-          className="w-full h-screen"
+          className="w-full h-full"
           title={document.name}
         ></iframe>
       );
@@ -45,7 +45,7 @@ export default function DocumentEditor({ params }: { params: { id: string } }) {
     case "image/gif":
     case "image/webp":
       return (
-        <img src={document.url} className="h-[50vh]" alt={document.name} />
+        <img src={document.url} className="h-full" alt={document.name} />
       );
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
@@ -60,7 +60,7 @@ export default function DocumentEditor({ params }: { params: { id: string } }) {
       );
   }
 
-  return <CustomFileViewer preUrl={document.url} />;
+  return <CustomFileViewer preUrl={document.url}/>;
 }
 
 const getDocument = async (fileId: string, userId: string) => {

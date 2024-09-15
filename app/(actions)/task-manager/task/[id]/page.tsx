@@ -87,6 +87,15 @@ export default function TaskDetails() {
   const handleCommentSubmit = async () => {
     try {
       setIsAddingComment(true)
+      if (newComment == "")
+      {
+        setIsAddingComment(false);
+        toast({
+          title:"InValid Comment!",
+          variant:"destructive"
+        })
+        return ;
+      }
       const response = await fetch("/api/task/comment/create", {
         method: "POST",
         body: JSON.stringify({
@@ -215,7 +224,7 @@ export default function TaskDetails() {
                   </p>
                 </div>
               </div>
-            ))} */}
+            ))} 
           </div>
         </CardContent>
         <CardFooter>

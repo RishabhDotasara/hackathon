@@ -11,7 +11,7 @@ const CustomFileViewer = ({ preUrl }: { preUrl: string }) => {
   return (
     <div
       style={{ overflow: "hidden", position: "relative" }}
-      className="h-screen"
+      className="h-full"
     >
       {/* Render DocViewer */}
       <DocViewer
