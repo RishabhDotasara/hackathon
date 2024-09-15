@@ -15,7 +15,7 @@ model User {
   tasks     Task[]  @relation("assignedTasks")
   createdTasks Task[] @relation("createdTasks")
   comments  Comment[]
-  teams Team[]
+  
 }
 
 enum Status {
@@ -38,17 +38,10 @@ model Task {
   deadline    DateTime
   status      Status
   teamId  String? 
-  team Team? @relation(fields: [teamId], references: [teamId])
+  
   comments    Comment[] 
 }
 
-model Team{
-  teamId String @id @default(uuid())
-  teamName String 
-  members User[] 
-  createdBy String 
-  tasks Task[]
-}
 
 model Comment {
   commentId String @id @default(uuid())
