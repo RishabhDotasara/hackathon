@@ -334,7 +334,10 @@ export default function DocumentList() {
       key={doc.id}
       className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 ease-in-out"
     >
-      <Link href={`/documents/${doc.id}`} className="flex items-center">
+      <Link
+        href={`/documents/${doc.id}?ownerId=${doc.ownerId}`}
+        className="flex items-center"
+      >
         <div className="mr-4 text-gray-500">{getIcon(doc.mimetype)}</div>
         <h2 className="text-md font-semibold max-w-[10%] text-ellipsis">
           {doc.name}
@@ -497,4 +500,3 @@ export default function DocumentList() {
     </div>
   );
 }
-

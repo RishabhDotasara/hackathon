@@ -7,18 +7,22 @@ import { Document } from "../page";
 import { useSession } from "next-auth/react";
 import TextEditor from "@/components/TextEditor";
 import CustomFileViewer from "@/components/CustomFileViewer";
+import { useSearchParams } from "next/navigation";
 
 export default function DocumentEditor({ params }: { params: { id: string } }) {
   const session = useSession();
   const [document, setDocument] = React.useState<Document | null>(null);
   const [presignedUrl, setPresignedUrl] = React.useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  const ownerId = searchParams.get("ownerId");
 
   useEffect(() => {
     const fetchDocument = async () => {
       try {
         const { fileInfo, presignedUrl } = await getDocument(
           params.id,
-          session.data?.userId
+          ownerId || session?.data?.userId
         );
         setPresignedUrl(presignedUrl);
         setDocument(fileInfo);
