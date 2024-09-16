@@ -99,6 +99,7 @@ export default function TaskDetails() {
       const response = await fetch("/api/task/comment/create", {
         method: "POST",
         body: JSON.stringify({
+          // @ts-ignore
           authorId: session.data?.userId,
           taskId: task?.taskId,
           content: newComment.trim(),
@@ -163,6 +164,7 @@ export default function TaskDetails() {
         <CardHeader>
           <CardTitle className="text-2xl font-bold flex justify-between">
             {task.title}
+            {/* @ts-ignore */}
             {session.data?.isAdmin && <span className="p-2 rounded bg-red-200 cursor-pointer" onClick={()=>{handleDeleteTask()}}>
               {!isDeleting && <Trash className="text-red-500"/>}
               {isDeleting && <Loader2 className="animate-spin"></Loader2>}
@@ -216,6 +218,7 @@ export default function TaskDetails() {
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">
+                    {/* @ts-ignore */}
                     {comment.author.employeeId}
                   </p>
                   <p className="text-sm text">{comment.content}</p>

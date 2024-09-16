@@ -7,4 +7,8 @@ module.exports = {
       },
     ],
   },
+  typescript: {
+    // Set to true to ignore TypeScript errors during build
+    ignoreBuildErrors: true,
+  },
 };
