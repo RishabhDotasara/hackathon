@@ -245,7 +245,7 @@ export default function TextEditor({
     <>
       <DocumentEditorContainerComponent
         id="container"
-        height={"60vh"}
+        height={"65vh"}
         width="70vw"
         serviceUrl="https://ej2services.syncfusion.com/production/web-services/api/documenteditor/"
         enableToolbar={true}

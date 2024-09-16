@@ -240,6 +240,11 @@ export default function DocumentList() {
 
   const handleShare = (doc: Document) => {
     setSelectedDocument(doc);
+    setSelectedUsers(
+      doc.sharedWith
+        ? users.filter((user) => doc.sharedWith?.includes(user.userId))
+        : []
+    );
     setIsShareModalOpen(true);
   };
 
