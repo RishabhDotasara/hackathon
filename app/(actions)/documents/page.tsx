@@ -450,7 +450,7 @@ export default function DocumentList() {
               {selectedUsers.map((user) => (
                 <div
                   key={user.userId}
-                  className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-sm flex items-center"
+                  className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm flex items-center"
                 >
                   {user.employeeId}
                   <Button
