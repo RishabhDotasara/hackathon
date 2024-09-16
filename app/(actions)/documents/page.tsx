@@ -128,6 +128,7 @@ export default function DocumentList() {
 
   const session = useSession();
   const { toast } = useToast();
+  // @ts-ignore
   const userId: string = session.data?.userId;
 
   useEffect(() => {
@@ -365,7 +366,7 @@ export default function DocumentList() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 flex flex-col  h-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Documents</h1>
         <div className="relative">
@@ -496,3 +497,4 @@ export default function DocumentList() {
     </div>
   );
 }
+

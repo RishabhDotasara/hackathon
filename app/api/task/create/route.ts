@@ -15,9 +15,12 @@ export async function POST(request: NextRequest) {
         deadline: body.deadline,
         status: "PENDING", // Assuming you have a status field
       },
+      include:{
+        assignee:true
+      }
     });
 
-    return NextResponse.json({ message: "Task created and assigned!" }, { status: 200 });
+    return NextResponse.json({ message: "Task created and assigned!", task }, { status: 200 });
   } catch (err) {
     console.error("Error in task creation:", err);
     return NextResponse.json({ message: "Error creating task" }, { status: 500 });

@@ -7,7 +7,11 @@ export async function GET(request:NextRequest)
     try 
     {
         const prisma = new PrismaClient();
-        const users = await prisma.user.findMany({})
+        const users = await prisma.user.findMany({
+            include:{
+                tasks:true
+            }
+        })
 
         return NextResponse.json({message:"Successfully got the users!", users})
     }

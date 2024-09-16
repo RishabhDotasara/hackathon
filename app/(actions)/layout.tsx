@@ -3,8 +3,10 @@ import Link from "next/link";
 import {
   Bell,
   CircleUser,
+  File,
   FileText,
   Home,
+  List,
   Menu,
   Package2,
   Search,
@@ -89,10 +91,10 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                 Task Manager
               </Link>
               <Link
-                href="/leaderBoard"
+                href="/leaderboard"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
               >
-                <FaTasks className="h-4 w-4" />
+                <List className="h-4 w-4" />
                 Leader Board
               </Link>
               <Link
@@ -117,7 +119,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col ">
         <header className="flex h-14 items-center gap-4 border-b bg-white px-4 lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>
@@ -147,6 +149,14 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                   Task Manager
                 </Link>
                 <Link
+                  href="/leaderboard"
+                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                >
+                  <List className="h-5 w-5" />
+                    LeaderBoard
+                </Link>
+               
+                <Link
                   href="/chats"
                   className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                 >
@@ -154,17 +164,17 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                   Chats
                 </Link>
                 <Link
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                  href={"/documents"}
+                  href="/documents"
+                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                 >
-                  <FileText className="h-4 w-4" />
+                  <File className="h-5 w-5" />
                   Documents
                 </Link>
               </nav>
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
-            <form>
+            {/* <form>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -173,7 +183,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                   className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
                 />
               </div>
-            </form>
+            </form> */}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -189,7 +199,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
           </DropdownMenu>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-          <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm">
+          <div className="flex flex-1 items-center justify-center rounded-lg  shadow-sm">
             {children}
           </div>
         </main>
