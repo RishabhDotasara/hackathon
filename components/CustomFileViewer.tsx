@@ -17,10 +17,6 @@ const CustomFileViewer = ({
 
   return (
     <div
-<<<<<<< HEAD
-      style={{ overflow: "hidden", position: "relative" }}
-      className="h-full"
-=======
       style={{
         display: "flex",
         flexDirection: "column",
@@ -28,7 +24,6 @@ const CustomFileViewer = ({
         width: "60vw",
         overflow: "hidden",
       }}
->>>>>>> 2246a3467292f117292f6c1486c583ea001efad3
     >
       {/* Render DocViewer */}
       <DocViewer

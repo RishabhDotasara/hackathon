@@ -128,6 +128,7 @@ export default function DocumentList() {
 
   const session = useSession();
   const { toast } = useToast();
+  // @ts-ignore
   const userId: string = session.data?.userId;
 
   useEffect(() => {
@@ -496,3 +497,4 @@ export default function DocumentList() {
     </div>
   );
 }
+

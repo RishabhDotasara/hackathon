@@ -26,7 +26,7 @@ import { Task, User } from '@prisma/client'
 import { useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 
-export default function TaskDialog({trigger, triggerFunc}:{trigger:React.ReactNode, triggerFunc:any}) {
+export default function TaskDialog({trigger, triggerFunc, tasks}:{trigger:React.ReactNode, triggerFunc:any, tasks:any}) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -71,6 +71,7 @@ const handleSubmit = async (event: React.FormEvent) => {
     const body: Omit<Task, "taskId"> = {
       title,
       description,
+      // @ts-ignore
       createdById: session.data?.userId ,
       assigneeId: assignee,
       deadline: selectedDueDate,
@@ -87,7 +88,9 @@ const handleSubmit = async (event: React.FormEvent) => {
       toast({
         title: "Task Created Successfully!",
       });
-      
+      const data = await response.json();
+      console.log(data)
+      triggerFunc([...tasks, data.task])
       setOpen(false);
       setTitle('');
       setDescription('');
@@ -96,7 +99,7 @@ const handleSubmit = async (event: React.FormEvent) => {
     } else {
       throw new Error('Failed to create task');
     }
-  } catch (err) {
+  } catch (err:any) {
     toast({
       title: 'Error creating task',
       description: err.message,
@@ -118,7 +121,7 @@ const handleSubmit = async (event: React.FormEvent) => {
       } else {
         throw new Error('Failed to fetch users');
       }
-    } catch (err) {
+    } catch (err:any) {
       toast({
         title: "Error fetching users, please try again.",
         description: err.message,
