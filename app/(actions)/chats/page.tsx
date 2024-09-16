@@ -23,12 +23,11 @@ import {
   query,
   orderBy,
   onSnapshot,
-  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { useSession } from "next-auth/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
 
 interface Contact {
   userId: string;
@@ -154,12 +153,18 @@ export default function ChatPage() {
           </DropdownMenu>
         </div>
         <div className="space-x-2">
-          <Button size="icon" variant="ghost">
-            <FiVideo className="h-4 w-4" />
-          </Button>
-          <Button size="icon" variant="ghost">
-            <FiPhone className="h-4 w-4" />
-          </Button>
+          {selectedContact && (
+            <>
+              <Link href={`/video-call?otherUserId=${selectedContact.userId}`}>
+                <Button size="icon" variant="ghost">
+                  <FiVideo className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Button size="icon" variant="ghost">
+                <FiPhone className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
