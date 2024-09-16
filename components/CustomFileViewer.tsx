@@ -1,23 +1,40 @@
 import React from "react";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 
-const CustomFileViewer = ({ preUrl }: { preUrl: string }) => {
+const CustomFileViewer = ({
+  preUrl,
+  fileName,
+}: {
+  preUrl: string;
+  fileName: string;
+}) => {
   let docs = [
     {
       uri: preUrl,
+      fileName,
     },
   ];
 
   return (
     <div
-      style={{ overflow: "hidden", position: "relative" }}
-      className="h-screen"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "60vh",
+        width: "60vw",
+        overflow: "hidden",
+      }}
     >
       {/* Render DocViewer */}
       <DocViewer
         prefetchMethod="GET"
         documents={docs}
         pluginRenderers={DocViewerRenderers}
+        style={{
+          flex: 1,
+          width: "100%",
+          height: "100%",
+        }}
       />
     </div>
   );

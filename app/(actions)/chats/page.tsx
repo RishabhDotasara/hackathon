@@ -1,71 +1,130 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import { FiVideo, FiPhone, FiSend, FiPaperclip, FiChevronDown, FiUser } from 'react-icons/fi'
-import { Button } from "@/components/ui/button"
+import React, { useEffect, useRef, useState } from "react";
+import {
+  FiVideo,
+  FiPhone,
+  FiSend,
+  FiPaperclip,
+  FiChevronDown,
+  FiUser,
+} from "react-icons/fi";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import io,{ Socket } from "socket.io-client"
-
-
-const socket: Socket = io('http://localhost:3000')
-
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  where,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
+import { useSession } from "next-auth/react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Contact {
-  id: number
-  name: string
-  avatar: string
+  userId: string;
+  isAdmin: boolean;
+  employeeId: string;
 }
-interface Message{
-  id: number
-  sender: string
-  content: string
+
+interface Message {
+  id: string;
+  senderId: string;
+  content: string;
+  timestamp: any;
 }
 
 export default function ChatPage() {
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
-  const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const session = useSession();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const currentUserId = session.data?.userId;
 
-  const contacts: Contact[] = [
-    { id: 1, name: 'John Doe', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
-    { id: 2, name: 'Jane Smith', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
-    { id: 3, name: 'Mike Johnson', avatar: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
-  ]
+  // Fetch contacts from API
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const res = await fetch("/api/user/getAll");
+        const data = await res.json();
 
-  const handleContactSelect = (contact: Contact) => setSelectedContact(contact)
-
-  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (message.trim()) {
-      socket.emit('message',{
-        sender:selectedContact?.name || 'Anonymous',
-        content : message
-      })
-      setMessages([...messages,{
-        id:Date.now(),
-        sender: 'Me',
-        content: message
-      }])
-      setMessage('')
-    }
-  }
-
-  useEffect(() =>{
-      socket.on('message',(data:any) =>{
-        setMessages((prevMessages) => [...prevMessages,data])
-      })
-
-      return () => {
-        socket.off('message')
-        socket.disconnect()
+        // Remove current user from contacts
+        const filteredData = data.filter((contact: Contact) => {
+          return contact.userId !== currentUserId;
+        });
+        setContacts(filteredData);
+        setSelectedContact(filteredData[0]);
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
       }
-  },[])
+    };
+    fetchContacts();
+  }, []);
+
+  // Listen for real-time messages in Firestore
+  useEffect(() => {
+    if (selectedContact) {
+      const chatId = getChatId(currentUserId, selectedContact.userId);
+      const q = query(
+        collection(db, "chats", chatId, "messages"),
+        orderBy("timestamp", "asc")
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedMessages = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Message[];
+        setMessages(fetchedMessages);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [selectedContact, currentUserId]);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const getChatId = (user1: string, user2: string) => {
+    return [user1, user2].sort().join("_"); // Ensure chatId is consistent for both users
+  };
+
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (message.trim() && selectedContact) {
+      const chatId = getChatId(currentUserId, selectedContact.userId);
+
+      try {
+        await addDoc(collection(db, "chats", chatId, "messages"), {
+          senderId: currentUserId,
+          content: message,
+          timestamp: new Date(),
+        });
+
+        setMessage("");
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-full w-full bg-gray-100">
@@ -73,23 +132,22 @@ export default function ChatPage() {
       <div className="bg-white shadow-sm p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-            {selectedContact ? (
-              <img src={selectedContact.avatar} alt={selectedContact.name} className="w-full h-full rounded-full" />
-            ) : (
-              <FiUser className="w-6 h-6 text-gray-500" />
-            )}
+            <FiUser className="w-6 h-6 text-gray-500" />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="font-semibold">
-                {selectedContact ? selectedContact.name : 'Select a chat'}
+                {selectedContact ? selectedContact.employeeId : "Select a chat"}
                 <FiChevronDown className="ml-2" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {contacts.map((contact) => (
-                <DropdownMenuItem key={contact.id} onSelect={() => handleContactSelect(contact)}>
-                  {contact.name}
+                <DropdownMenuItem
+                  key={contact.userId}
+                  onSelect={() => setSelectedContact(contact)}
+                >
+                  {contact.employeeId}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -106,24 +164,40 @@ export default function ChatPage() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {selectedContact ? (
-         messages.map((msg) =>(
-          <div key={msg.id} className={`flex ${msg.sender === 'Me' ? 'justify-end' : 'justify-start'}`}>
-          <div className={`${msg.sender === 'Me' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'} rounded-lg p-3 max-w-xs lg:max-w-md`}>
-            <p><strong>{msg.sender}</strong></p>
-            <p>{msg.content}</p>
+      <div className="flex-1 overflow-hidden p-4">
+        <ScrollArea className="h-[48vh]">
+          <div className="space-y-4 pr-4">
+            {selectedContact ? (
+              messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`message flex ${
+                    msg.senderId === currentUserId
+                      ? "justify-end"
+                      : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`${
+                      msg.senderId === currentUserId
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground"
+                    } rounded-lg py-2 px-4 max-w-xs lg:max-w-md`}
+                  >
+                    <p>{msg.content}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground">No chat selected</p>
+              </div>
+            )}
+            {/* Empty div to scroll to */}
+            <div ref={messagesEndRef} />
           </div>
-          </div>
-         )
-        ) ): (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">No chat selected</p>
-          </div>
-        )}
-
+        </ScrollArea>
       </div>
-
       {/* Message Input */}
       <form onSubmit={handleSendMessage} className="bg-white border-t p-4">
         <div className="flex items-center space-x-2">
@@ -143,5 +217,5 @@ export default function ChatPage() {
         </div>
       </form>
     </div>
-  )
+  );
 }

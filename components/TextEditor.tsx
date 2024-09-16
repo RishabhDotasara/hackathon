@@ -65,7 +65,7 @@ export default function TextEditor({
   }, [fileId, userId]);
 
   useEffect(() => {
-    if (editorRef.current && preUrl.trim() !== "") {
+    if (editorRef.current && preUrl?.trim() !== "") {
       const fetchAndExtractContent = async (wordFileUrl: string) => {
         try {
           // Fetch the Word file

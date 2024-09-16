@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Dashboard } from "@/components/Layout";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { SessionProvider } from "next-auth/react";
 import Session from "@/providers/session-provider";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -29,16 +27,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-white text-black antialiased ">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="min-h-screen bg-white text-black antialiased">
         <Session>
           <ThemeProvider>
-
-          <Toaster/>
-          {children}
+            <Toaster />
+            {children}
           </ThemeProvider>
         </Session>
-       
       </body>
     </html>
   );
