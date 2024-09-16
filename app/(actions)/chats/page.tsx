@@ -178,13 +178,15 @@ export default function ChatPage() {
                   }`}
                 >
                   <div
-                    className={`${
+                    className={`box-border ${
                       msg.senderId === currentUserId
                         ? "bg-primary text-primary-foreground"
                         : "bg-secondary text-secondary-foreground"
-                    } rounded-lg py-2 px-4 max-w-xs lg:max-w-md`}
+                    } rounded-lg py-2 px-4 max-w-[75%] break-words`}
                   >
-                    <p>{msg.content}</p>
+                    <p className="whitespace-pre-wrap max-w-xs lg:max-w-md">
+                      {msg.content}
+                    </p>
                   </div>
                 </div>
               ))
