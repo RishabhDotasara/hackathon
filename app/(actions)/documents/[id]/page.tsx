@@ -11,12 +11,17 @@ import CustomFileViewer from "@/components/CustomFileViewer";
 export default function DocumentEditor({ params }: { params: { id: string } }) {
   const session = useSession();
   const [document, setDocument] = React.useState<Document | null>(null);
+  const [presignedUrl, setPresignedUrl] = React.useState<string | null>(null);
 
   useEffect(() => {
     const fetchDocument = async () => {
       try {
-        const document = await getDocument(params.id, session.data?.userId);
-        setDocument(document);
+        const { fileInfo, presignedUrl } = await getDocument(
+          params.id,
+          session.data?.userId
+        );
+        setPresignedUrl(presignedUrl);
+        setDocument(fileInfo);
       } catch (error) {
         console.error(error);
       }
@@ -33,8 +38,8 @@ export default function DocumentEditor({ params }: { params: { id: string } }) {
     case "application/pdf":
       return (
         <iframe
-          src={document.url}
-          className="w-full h-full"
+          src={presignedUrl!}
+          className="w-full h-screen"
           title={document.name}
         ></iframe>
       );
@@ -45,7 +50,7 @@ export default function DocumentEditor({ params }: { params: { id: string } }) {
     case "image/gif":
     case "image/webp":
       return (
-        <img src={document.url} className="h-full" alt={document.name} />
+        <img src={presignedUrl!} className="h-[50vh]" alt={document.name} />
       );
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
@@ -55,16 +60,26 @@ export default function DocumentEditor({ params }: { params: { id: string } }) {
           fileId={document.id}
           fileName={document.name}
           mimetype={document.mimetype}
-          preUrl={document.url}
+          preUrl={presignedUrl!}
         />
       );
   }
 
-  return <CustomFileViewer preUrl={document.url}/>;
+  return <CustomFileViewer fileName={document.name} preUrl={presignedUrl!} />;
 }
 
 const getDocument = async (fileId: string, userId: string) => {
   try {
+    const res = await fetch(`/api/file/getPresignedUrl`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ fileId, userId }),
+    });
+
+    const data = await res.json();
+
     const collectionRef = collection(db, "files");
     const docRef = doc(collectionRef, fileId);
     const firebaseDoc = await getDoc(docRef);
@@ -88,7 +103,9 @@ const getDocument = async (fileId: string, userId: string) => {
       throw new Error("You are not authorized to view this document");
     }
 
-    return fileInfo;
+    const presignedUrl = data.url;
+
+    return { fileInfo, presignedUrl };
   } catch (error) {
     console.error("Error fetching document:", error);
     throw error; // Re-throw the error to handle it in the caller function
