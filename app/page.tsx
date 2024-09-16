@@ -1,9 +1,15 @@
-import React from 'react'
+"use client"
+import { useRouter } from 'next/navigation'
+import React, { useEffect } from 'react'
 
 const page = () => {
+  const router = useRouter();
+  useEffect(()=>{
+    router.push("/auth/signin")
+  },[])
   return (
-    <div className="text-3xl font-bold text-red-500 underline">
-      Hello World
+    <div className="h-screen w-full bg-black text-white grid place-items-center">
+      Welcome!
     </div>
   )
 }
