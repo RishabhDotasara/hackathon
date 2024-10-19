@@ -21,12 +21,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
 import { Cross, Loader, X } from "lucide-react";
-import { Task, User } from "@prisma/client";
+import { Role, Task, User } from "@prisma/client";
 import { useToast } from "@/hooks/use-toast";
 import TaskDialog from "@/components/add-task";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { teamAtom } from "@/states/teamAtom";
 
 const statusColors = {
   PENDING: "bg-red-500 text-white",
@@ -50,6 +52,7 @@ export default function HomePage() {
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
   const [userToFilter, setUserToFilter] = useState("")
   const [users, setUsers] = useState<User[]>()
+  const [currentTeamId, setCurrentTeamId] = useRecoilState(teamAtom);
 
   // interface Task {
   //   id: number
@@ -69,12 +72,12 @@ export default function HomePage() {
       setIsLoading(true);
       console.log(session);
       const urls = [
-        "/api/task/getAll",
+        `/api/task/getAll?teamId=${currentTeamId}`,
         // @ts-ignore
-        `/api/task/getAll?assigneeId=${session.data?.userId}`,
+        `/api/task/getAll?assigneeId=${session.data?.userId}?teamId=${currentTeamId}`,
       ];
       // @ts-ignore
-      const response = await fetch(session.data?.isAdmin ? urls[0] : urls[1]); // Ensure this endpoint is correct
+      const response = await fetch(session.data?.role != Role.MEMBER ? urls[0] : urls[1]); // Ensure this endpoint is correct
       const data = await response.json();
       console.log(data);
       setIsLoading(false);
@@ -132,7 +135,8 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchTasks();
-  }, [session]);
+    console.log(currentTeamId)
+  }, [session, currentTeamId]);
 
   useEffect(()=>{
     getUsers()
@@ -170,7 +174,7 @@ export default function HomePage() {
       )}
       {!isLoading && (
         <div className="container mx-auto p-4">
-          <h1 className="text-2xl font-bold mb-6">Task Management Dashboard</h1>
+          <h1 className="text-2xl font-bold mb-6">Your Tasks</h1>
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* Card for Task Overview with Bar Chart */}
@@ -181,7 +185,7 @@ export default function HomePage() {
                   Your current tasks and their statuses
                 </CardDescription>
                 {/* @ts-ignore */}
-                {session.data?.isAdmin && (
+                {session.data?.role != Role.MEMBER && (
                   <TaskDialog
                     trigger={<Button variant="outline">Add Task</Button>}
                     triggerFunc={setTasks}
@@ -215,7 +219,7 @@ export default function HomePage() {
                 <CardTitle>Task List</CardTitle>
                 <CardDescription>Tasks To Work On</CardDescription>
                 {/* @ts-ignore */}
-                {session.data?.isAdmin && <div className="flex gap-2">
+                {session.data?.role != Role.MEMBER && <div className="flex gap-2">
                 <Select onValueChange={(value)=>{setUserToFilter(value)}} value={userToFilter}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select a User" />
@@ -225,7 +229,7 @@ export default function HomePage() {
                       <SelectLabel>Assigned To</SelectLabel>
                       {users && users.map((user:User)=>{
                         return (
-                          <SelectItem value={user.userId}>{user.employeeId}</SelectItem>
+                          <SelectItem value={user.userId}>{user.username} | {user.employeeId.toUpperCase()}</SelectItem>
                         )
                       })}
                     </SelectGroup>
@@ -241,7 +245,7 @@ export default function HomePage() {
                     {filteredTasks.map((task: Task) => (
                       <li
                         key={task.taskId}
-                        className="flex items-center justify-between p-2 bg-gray-100 rounded-lg"
+                        className="flex items-center justify-between p-2 bg-accent rounded-lg"
                       >
                         <div>
                           <Link
@@ -250,9 +254,9 @@ export default function HomePage() {
                           >
                             {task.title}
                           </Link>
-                          <p className="text-sm text-muted-foreground flex gap-4">
+                          <p className="text-sm text-muted-foreground">
                             {/* @ts-ignore */}
-                            <span>Assigned to: {task.assignee.employeeId}</span>
+                            <span className="mr-8">Assigned to: {task.assignee.username}</span>
                             <span>
                               Time Left:{" "}
                               {-new Date().getDate() +

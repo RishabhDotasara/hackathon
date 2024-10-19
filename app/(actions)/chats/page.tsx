@@ -1,5 +1,8 @@
 "use client";
 
+
+export const dynamic = "force-dynamic"
+
 import React, { useEffect, useRef, useState } from "react";
 import {
   FiVideo,
@@ -28,10 +31,11 @@ import { db } from "@/lib/firebase";
 import { useSession } from "next-auth/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from "next/link";
+import { Role } from "@prisma/client";
 
 interface Contact {
   userId: string;
-  isAdmin: boolean;
+  role: Role;
   employeeId: string;
 }
 
@@ -41,6 +45,7 @@ interface Message {
   content: string;
   timestamp: any;
 }
+
 
 export default function ChatPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);

@@ -1,0 +1,3 @@
+- ENABLE ROLE BASED AUTH, also add username to the user field. Stauts: Done
+- Add Dark Mode! Status: Done!
+- Add Teams Support Status: In Progress!

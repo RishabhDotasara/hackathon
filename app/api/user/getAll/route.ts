@@ -10,7 +10,7 @@ export async function GET(request: Request) {
       select: {
         userId: true,
         employeeId: true,
-        isAdmin: true,
+        role:true, 
       },
     });
 

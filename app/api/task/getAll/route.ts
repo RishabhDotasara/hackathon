@@ -4,16 +4,20 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const assigneeId = searchParams.get("assigneeId");
+  const teamId = searchParams.get("teamId");
 
   try {
     const prisma = new PrismaClient();
     let tasks:any = [];
     // Fetch tasks assigned to the specified assignee
+    console.log("assigneeId", assigneeId);
+    console.log("teamId", teamId);
     if (assigneeId)
     {
        tasks = await prisma.task.findMany({
         where: {
           assigneeId: assigneeId,
+          teamId: teamId,
         },
         include: {
           user: true, 
@@ -24,6 +28,9 @@ export async function GET(request: Request) {
     else 
     {
       tasks = await prisma.task.findMany({
+        where:{
+          teamId: teamId,
+        },
         include: {
           user: true, 
           assignee: true, 

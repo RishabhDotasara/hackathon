@@ -1,4 +1,8 @@
 "use client";
+
+
+export const dynamic = "force-dynamic"; 
+
 import { Progress } from "@/components/ui/progress"; // Assuming you have a ShadCN progress component
 import { useToast } from "@/hooks/use-toast";
 import { Task, User } from "@prisma/client";
@@ -42,7 +46,12 @@ const CardCompo = ({
   );
 };
 
-export default function LeaderBoard() {
+export default function Home()
+{
+  return <h1>Leaderboard page.</h1>
+}
+
+function LeaderBoard() {
     const [users, setUsers] = useState<User[]>();
     const [loading, setLoading] = useState(false);
    

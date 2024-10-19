@@ -1,7 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import NextAuth from "next-auth/next";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { Session } from "next-auth";
+
 
 const handler = NextAuth({
   providers: [
@@ -25,7 +27,7 @@ const handler = NextAuth({
         try {
           const prisma = new PrismaClient();
           const id = credentials?.employeeId.toLowerCase();
-          const user = await prisma.user.findUnique({
+          const user:User | null = await prisma.user.findUnique({
             where: {
               employeeId: id,
             },
@@ -39,7 +41,7 @@ const handler = NextAuth({
           prisma.$disconnect();
           
           if (passwordCheck) {
-            return { id: user.userId, isAdmin: user.isAdmin, user }; // Include isAdmin in returned user data
+            return { id: user.userId, role:user.role, user }; // Include isAdmin in returned user data
           } else {
             return null;
           }
@@ -61,8 +63,8 @@ const handler = NextAuth({
       // Add userId and isAdmin to the session object
       if (token?.id) {
         session.userId = token.id;
-        session.isAdmin = token.isAdmin;
-        session.username = token.username // Add isAdmin flag to session
+        session.role = token.role;
+        session.username = token.username
       }
       return session;
     },
@@ -70,8 +72,8 @@ const handler = NextAuth({
       // Add userId and isAdmin to the token
       if (user) {
         token.id = user.id;
-        token.isAdmin = user.isAdmin;
-        token.username = user.employeeId 
+        token.role = user.role;
+        token.username = user.username
       }
       return token;
     },

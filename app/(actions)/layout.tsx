@@ -23,13 +23,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import { FaTasks } from "react-icons/fa";
 import { useToast } from "@/hooks/use-toast";
 
 import "../globals.css";
+import { ModeToggle } from "@/components/theme-toggle";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Team } from "@prisma/client";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { userAtom } from "@/states/userAtom";
+import { teamAtom } from "@/states/teamAtom";
 
 export const description =
   "A products dashboard with a sidebar navigation and a main content area. The dashboard has a header with a search input and a user menu. The sidebar has a logo, navigation links, and a card with a call to action. The main content area shows an empty state with a call to action.";
@@ -38,6 +52,34 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   const session = useSession();
   const router = useRouter();
   const { toast } = useToast();
+  const [teams, setTeams] = useState([]);
+  const setUser = useSetRecoilState(userAtom)
+  const [currentTeam, setCurrentTeam] = useRecoilState(teamAtom) ;  
+
+
+  const fetchTeams = async ()=>{
+    try 
+    {
+      const res = await fetch("/api/user/get?userId="+session.data?.userId, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      setUser(data);
+      if (data.teams)
+      {
+        setTeams(data.teams);
+        setCurrentTeam(data.teams[0].teamId);
+      }
+      console.log(data);
+    }
+    catch(er)
+    {
+      console.log(er)
+    }
+  }
 
   useEffect(() => {
     if (session.status === "unauthenticated") {
@@ -47,8 +89,10 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
         description: "Session Expired!",
       });
     }
+    fetchTeams();
   }, [session.status, router]);
 
+  
   const handleLogOut = async () => {
     try {
       await signOut({ redirect: false }); // Wait for signOut to complete
@@ -67,15 +111,38 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   };
   console.log(session);
 
+  const TeamSelector = () => {
+    return (
+      <Select onValueChange={(e)=>{setCurrentTeam(e)}} value={currentTeam}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select a Team" />
+        </SelectTrigger>
+        <SelectContent >
+          <SelectGroup>
+            <SelectLabel>Select Team</SelectLabel>
+            {teams && teams.map((team:any)=>{
+              return (
+                <SelectItem value={team.teamId}>{team.name}</SelectItem>
+              )
+            })}
+            {teams.length == 0 && <SelectItem value="No Teams Found!">No Teams Found!</SelectItem>}
+            
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    );
+  };
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-background md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center border-b bg-muted px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Package2 className="h-6 w-6" />
-              <span>{session.status}</span>
-            </Link>
+          <div className="flex h-14 items-center border-b bg-background px-4 lg:h-[60px] lg:px-6">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-semibold"
+            ></Link>
+            <TeamSelector/>
             <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
               <Bell className="h-4 w-4" />
               <span className="sr-only">Toggle notifications</span>
@@ -120,7 +187,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="flex flex-col ">
-        <header className="flex h-14 items-center gap-4 border-b bg-white px-4 lg:h-[60px] lg:px-6">
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -138,8 +205,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                   href="#"
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
-                  <Package2 className="h-6 w-6" />
-                  <span className="sr-only">Acme Inc</span>
+                  <TeamSelector/>
                 </Link>
                 <Link
                   href="/task-manager"
@@ -153,9 +219,9 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                   className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                 >
                   <List className="h-5 w-5" />
-                    LeaderBoard
+                  LeaderBoard
                 </Link>
-               
+
                 <Link
                   href="/chats"
                   className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
@@ -174,16 +240,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
-            {/* <form>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search products..."
-                  className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
-                />
-              </div>
-            </form> */}
+            <ModeToggle />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -193,13 +250,14 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-background">
+              <DropdownMenuLabel>{session.data?.role}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-          <div className="flex flex-1 items-center justify-center rounded-lg  shadow-sm">
+          <div className="flex flex-1  justify-center rounded-lg  shadow-sm">
             {children}
           </div>
         </main>

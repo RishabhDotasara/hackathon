@@ -25,6 +25,8 @@ import { useToast } from '@/hooks/use-toast'
 import { Task, User } from '@prisma/client'
 import { useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
+import { useRecoilValue } from 'recoil'
+import { teamAtom } from '@/states/teamAtom'
 
 export default function TaskDialog({trigger, triggerFunc, tasks}:{trigger:React.ReactNode, triggerFunc:any, tasks:any}) {
   const [open, setOpen] = useState(false)
@@ -36,6 +38,7 @@ export default function TaskDialog({trigger, triggerFunc, tasks}:{trigger:React.
   const { toast } = useToast()
   const session = useSession();
   const [isCreating, setIsCreating] = useState(false);
+  const teamId = useRecoilValue(teamAtom);
 
   // Handle form submission
   // Handle form submission
@@ -50,6 +53,7 @@ const handleSubmit = async (event: React.FormEvent) => {
       toast({
         title: 'Please fill all required fields',
         variant: 'destructive',
+        
       });
       return;
     }
@@ -76,6 +80,7 @@ const handleSubmit = async (event: React.FormEvent) => {
       assigneeId: assignee,
       deadline: selectedDueDate,
       status: 'PENDING', // Assuming you have a status field
+      teamId: teamId
     };
     
     const response = await fetch("/api/task/create", {
@@ -140,7 +145,7 @@ const handleSubmit = async (event: React.FormEvent) => {
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-neutral-900">
+      <DialogContent className="sm:max-w-[425px] bg-background text-foreground">
         <DialogHeader>
           <DialogTitle>Add New Task</DialogTitle>
           <DialogDescription>
@@ -197,10 +202,10 @@ const handleSubmit = async (event: React.FormEvent) => {
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select an assignee" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-background">
                   {users.map((user) => (
                     <SelectItem key={user.userId} value={user.userId}>
-                      {user.employeeId}
+                      {user.username} | {user.employeeId}
                     </SelectItem>
                   ))}
                 </SelectContent>

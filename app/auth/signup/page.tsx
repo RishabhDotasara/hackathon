@@ -16,6 +16,7 @@ export default function SignUp() {
 
   const [employeeId, setEmployeeId] = useState("")
   const [password, setPassword] = useState("")
+  const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter();
 
@@ -25,7 +26,7 @@ export default function SignUp() {
       setLoading(true)
         fetch("/api/signup", {
           method:"POST", 
-          body:JSON.stringify({employeeId, password})
+          body:JSON.stringify({employeeId, password, username})
         })
         .then(response=>{
           if (response.status == 200)
@@ -64,6 +65,19 @@ export default function SignUp() {
                 value={employeeId}
                 onChange={(e) => {
                   setEmployeeId(e.target.value);
+                }}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="cheeky boi"
+                required
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
                 }}
               />
             </div>

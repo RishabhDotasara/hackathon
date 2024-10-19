@@ -7,15 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  LEADER
+  MEMBER
+}
+
 model User {
   userId    String  @id @default(uuid())
   employeeId String @unique
+  username String @default("")
   password  String
-  isAdmin   Boolean
+  role Role @default(MEMBER)
   tasks     Task[]  @relation("assignedTasks")
   createdTasks Task[] @relation("createdTasks")
   comments  Comment[]
-  
+  teams     Team[]  @relation("teamMembers")
+  teamLeads Team[]  @relation("team-leaders")
+}
+
+model Team {
+  teamId   String  @id @default(uuid())
+  name      String
+  leaderId  String
+  leaders    User[] @relation("team-leaders")    
+  members   User[]  @relation("teamMembers")
+  tasks    Task[]  @relation("teamTasks")
 }
 
 enum Status {
@@ -38,6 +55,8 @@ model Task {
   deadline    DateTime
   status      Status
   
+  teamId String?
+  team Team? @relation("teamTasks", fields: [teamId], references: [teamId])
   comments    Comment[] 
 }
 

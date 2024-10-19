@@ -20,10 +20,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarIcon, ClockIcon, DeleteIcon, Loader, Loader2, Trash, User, User2Icon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { comment } from "postcss";
-import { Comment, Task } from "@prisma/client";
+import { Comment, Role, Task } from "@prisma/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import { type } from "os";
+import ToolTip from "@/components/tooltip";
 
 export default function TaskDetails() {
   const [status, setStatus] = useState("pending");
@@ -165,7 +166,7 @@ export default function TaskDetails() {
           <CardTitle className="text-2xl font-bold flex justify-between">
             {task.title}
             {/* @ts-ignore */}
-            {session.data?.isAdmin && <span className="p-2 rounded bg-red-200 cursor-pointer" onClick={()=>{handleDeleteTask()}}>
+            {session.data?.role != Role.MEMBER && <span className="p-2 rounded bg-red-200 cursor-pointer" onClick={()=>{handleDeleteTask()}}>
               {!isDeleting && <Trash className="text-red-500"/>}
               {isDeleting && <Loader2 className="animate-spin"></Loader2>}
             </span>}
@@ -217,10 +218,12 @@ export default function TaskDetails() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {/* @ts-ignore */}
-                    {comment.author.employeeId}
-                  </p>
+                  <ToolTip text={comment.author.employeeId}>
+                    <p className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                      {/* @ts-ignore */}
+                      {comment.author.username}
+                    </p>
+                  </ToolTip>
                   <p className="text-sm text">{comment.content}</p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(comment.createdAt).toLocaleString()}

@@ -1,5 +1,5 @@
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs"
 
@@ -17,7 +17,7 @@ export async function POST(request:NextRequest)
             data:{
                 employeeId:employeeId,
                 password:hashedPassword,
-                isAdmin:false
+                username:body.username
             }
         })
 

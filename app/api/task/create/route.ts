@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
         assigneeId: body.assigneeId,
         deadline: body.deadline,
         status: "PENDING", // Assuming you have a status field
+        teamId: body.teamId,
       },
       include:{
         assignee:true

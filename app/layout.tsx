@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import Session from "@/providers/session-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import RecoilProvider from "@/providers/recoil-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,11 +30,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen bg-white text-black antialiased">
+      <body className="min-h-screen antialiased">
         <Session>
-          <ThemeProvider>
-            <Toaster />
-            {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <RecoilProvider>
+              <TooltipProvider>
+                <Toaster />
+                {children}
+              </TooltipProvider>
+            </RecoilProvider>
           </ThemeProvider>
         </Session>
       </body>
