@@ -149,7 +149,7 @@ const handleSubmit = async (event: React.FormEvent) => {
         <DialogHeader>
           <DialogTitle>Add New Task</DialogTitle>
           <DialogDescription>
-            Fill in the details for the new task. Click add when you're done.
+            Fill in the details for the new task. Click add when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>

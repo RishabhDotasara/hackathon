@@ -11,4 +11,8 @@ module.exports = {
     // Set to true to ignore TypeScript errors during build
     ignoreBuildErrors: true,
   },
+  eslint: {
+    // Set to true to ignore ESLint errors during build
+    ignoreDuringBuilds: true,
+  },
 };

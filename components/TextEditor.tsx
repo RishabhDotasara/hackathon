@@ -119,8 +119,8 @@ export default function TextEditor({
   function handleKeyBoardShortcuts() {
     if (!editorRef.current) return;
     editorRef.current.documentEditor.keyDown = function (args) {
-      let keyCode = args.event.which || args.event.keyCode;
-      let isCtrlKey =
+      const keyCode = args.event.which || args.event.keyCode;
+      const isCtrlKey =
         args.event.ctrlKey || args.event.metaKey
           ? true
           : keyCode === 17
@@ -182,13 +182,13 @@ export default function TextEditor({
     saveDocument,
   ]);
 
-  let toolItem = {
+  const toolItem = {
     prefixIcon: "e-save icon",
     tooltipText: "Save the Document",
     text: "Save",
     id: "save",
   };
-  let items = [
+  const items = [
     toolItem,
     "New",
     "Open",

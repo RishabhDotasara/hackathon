@@ -26,7 +26,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
-import { FaTasks } from "react-icons/fa";
+import { FaPeopleCarry, FaTasks } from "react-icons/fa";
 import { useToast } from "@/hooks/use-toast";
 
 import "../globals.css";
@@ -158,6 +158,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                 Task Manager
               </Link>
               <Link
+                href="/teams"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <FaPeopleCarry className="h-4 w-4"/>
+                Teams
+              </Link>
+              <Link
                 href="/leaderboard"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
               >
@@ -213,6 +220,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                 >
                   <Home className="h-5 w-5" />
                   Task Manager
+                </Link>
+                <Link
+                  href="/teams"
+                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                >
+                  <FaPeopleCarry className="h-5 w-5" />
+                  Teams
                 </Link>
                 <Link
                   href="/leaderboard"

@@ -8,7 +8,7 @@ const CustomFileViewer = ({
   preUrl: string;
   fileName: string;
 }) => {
-  let docs = [
+  const docs = [
     {
       uri: preUrl,
       fileName,

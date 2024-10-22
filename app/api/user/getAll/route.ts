@@ -11,6 +11,7 @@ export async function GET(request: Request) {
         userId: true,
         employeeId: true,
         role:true, 
+        username:true
       },
     });
 
