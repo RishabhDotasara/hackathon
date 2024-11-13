@@ -16,12 +16,20 @@ export async function GET(request: Request) {
     {
        tasks = await prisma.task.findMany({
         where: {
-          assigneeId: assigneeId,
           teamId: teamId,
+          assignees:{
+            some:{
+              userId:assigneeId
+            }
+          }
         },
         include: {
           user: true, 
-          assignee: true, 
+          assignees:{
+            where:{
+              userId:assigneeId
+            }
+          }
         },
       });
     }
@@ -33,7 +41,7 @@ export async function GET(request: Request) {
         },
         include: {
           user: true, 
-          assignee: true, 
+          assignees: true, 
         },
       });
     }

@@ -195,7 +195,7 @@ function TeamForm({
           name="leaders"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Team Members</FormLabel>
+              <FormLabel>Team Leaders</FormLabel>
               <FormControl>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -252,11 +252,20 @@ function TeamForm({
               </FormControl>
               <FormDescription>
                 You can select multiple team leaders.
+                <div className="mt-2">
+          <strong>Selected Leaders:</strong>
+          <ul>
+            {form.getValues().leaders.map((l:User)=>{
+              return <li>{l.username}</li>
+            })}
+          </ul>
+        </div>
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        
 
         <Button
           type="submit"
