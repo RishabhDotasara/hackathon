@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         user: true, // Include the user who created the task
-        assignees: true, // Include the user who is assigned to the task
+        assignee: true, // Include the user who is assigned to the task
         comments: {
           include:{
             author:true

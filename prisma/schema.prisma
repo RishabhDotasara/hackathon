@@ -49,8 +49,8 @@ model Task {
   createdById String
   user        User      @relation("createdTasks",fields: [createdById], references: [userId])
 
- 
-  assignees    User[]       @relation("assignedTasks")
+  assigneeId  String
+  assignee    User       @relation("assignedTasks", fields: [assigneeId], references: [userId])
 
   deadline    DateTime
   status      Status

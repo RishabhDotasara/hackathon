@@ -79,7 +79,7 @@ export default function HomePage() {
       // @ts-ignore
       const response = await fetch(session.data?.role != Role.MEMBER ? urls[0] : urls[1]); // Ensure this endpoint is correct
       const data = await response.json();
-      console.log("All Tasks:",data);
+      console.log(data);
       setIsLoading(false);
       setTasks(Array.isArray(data) ? data : []);
       setFilteredTasks(Array.isArray(data) ? data : []);
@@ -136,7 +136,7 @@ export default function HomePage() {
   useEffect(() => {
     fetchTasks();
     console.log(currentTeamId)
-  }, [currentTeamId]);
+  }, [session, currentTeamId]);
 
   useEffect(()=>{
     getUsers()
@@ -190,7 +190,6 @@ export default function HomePage() {
                     trigger={<Button variant="outline">Add Task</Button>}
                     triggerFunc={setTasks}
                     tasks={tasks}
-                    allUsers={users}
                   />
                 )}
               </CardHeader>
