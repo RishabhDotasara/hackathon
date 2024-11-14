@@ -8,7 +8,9 @@ export async function GET(request:NextRequest)
     {
         const prisma = new PrismaClient();
         const users = await prisma.user.findMany({
-            include:{
+            select:{
+                username:true, 
+                employeeId:true, 
                 tasks:true
             }
         })
