@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Loader } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 export const description =
   "A login page with two columns. The first column has the login form with email and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image."
@@ -19,6 +20,7 @@ export default function SignUp() {
   const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter();
+  const {toast} = useToast()
 
   const createuser = async ()=>{
     try 
@@ -36,7 +38,10 @@ export default function SignUp() {
           }
           else 
           {
-
+            toast({
+              title:"Error Creating User!", 
+              description:"Try Again."
+            })
           }
         })
        

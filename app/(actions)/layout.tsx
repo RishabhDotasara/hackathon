@@ -40,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Team } from "@prisma/client";
+import { Role, Team } from "@prisma/client";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { userAtom } from "@/states/userAtom";
 import { teamAtom } from "@/states/teamAtom";
@@ -55,11 +55,12 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   const [teams, setTeams] = useState([]);
   const setUser = useSetRecoilState(userAtom)
   const [currentTeam, setCurrentTeam] = useRecoilState(teamAtom) ;  
-
+  const [isLoading, setIsLoading] = useState(false)
 
   const fetchTeams = async ()=>{
     try 
     {
+      setIsLoading(true)
       const res = await fetch("/api/user/get?userId="+session.data?.userId, {
         method: "GET",
         headers: {
@@ -72,11 +73,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
       {
         setTeams(data.teams);
         setCurrentTeam(data.teams[0].teamId);
+        setIsLoading(false)
       }
       console.log(data);
     }
     catch(er)
     {
+      setIsLoading(false)
       console.log(er)
     }
   }
@@ -89,7 +92,10 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
         description: "Session Expired!",
       });
     }
-    fetchTeams();
+    if (session.status == "authenticated")
+    {
+      fetchTeams();
+    }
   }, [session.status, router]);
 
   
@@ -132,6 +138,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
       </Select>
     );
   };
+  
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -157,13 +164,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                 <FaTasks className="h-4 w-4" />
                 Task Manager
               </Link>
-              <Link
+              {session.data?.role != Role.MEMBER && session.status == "authenticated" && (<Link
                 href="/teams"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
               >
                 <FaPeopleCarry className="h-4 w-4"/>
                 Teams
-              </Link>
+              </Link>)}
               <Link
                 href="/leaderboard"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
@@ -221,13 +228,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                   <Home className="h-5 w-5" />
                   Task Manager
                 </Link>
-                <Link
+                {session.data?.role != Role.MEMBER && session.status == "authenticated" && (<Link
                   href="/teams"
                   className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                 >
                   <FaPeopleCarry className="h-5 w-5" />
                   Teams
-                </Link>
+                </Link>)}
                 <Link
                   href="/leaderboard"
                   className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
