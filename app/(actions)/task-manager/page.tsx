@@ -100,7 +100,6 @@ export default function HomePage() {
       {
         const data = await response.json();
         setUsers(data.users)
-        console.log(data.users)
       }
     }
     catch(err)
@@ -176,7 +175,7 @@ export default function HomePage() {
       {!isLoading && (
         <div className="container mx-auto p-4">
           <h1 className="text-2xl font-bold mb-6">Your Tasks</h1>
-          {JSON.stringify(users)}
+
           <div className="grid gap-6 md:grid-cols-2">
             {/* Card for Task Overview with Bar Chart */}
             <Card className="h-fit">
@@ -191,7 +190,6 @@ export default function HomePage() {
                     trigger={<Button variant="outline">Add Task</Button>}
                     triggerFunc={setTasks}
                     tasks={tasks}
-                    Users={users}
                   />
                 )}
               </CardHeader>
@@ -231,7 +229,7 @@ export default function HomePage() {
                       <SelectLabel>Assigned To</SelectLabel>
                       {users && users.map((user:User)=>{
                         return (
-                          <SelectItem value={user.userId} key={user.userId}>{user.username} | {user.employeeId.toUpperCase()}</SelectItem>
+                          <SelectItem value={user.userId}>{user.username} | {user.employeeId.toUpperCase()}</SelectItem>
                         )
                       })}
                     </SelectGroup>
