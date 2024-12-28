@@ -243,8 +243,7 @@ export default function HomePage() {
                           <span className="mr-8">Assigned to: {(task as any).assignee.username}</span>
                           <span>
                             Time Left:{" "}
-                            {-new Date().getDate() +
-                              new Date(task?.deadline).getDate()}{" "}
+                            {Math.ceil((new Date(task.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}{" "}
                             day(s)
                           </span>
                         </p>

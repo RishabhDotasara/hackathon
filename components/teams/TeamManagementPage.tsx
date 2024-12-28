@@ -1,6 +1,5 @@
-"use client"
 import { useEffect, useState } from "react";
-import { Loader } from "lucide-react";
+import { Loader, Users, Users2 } from "lucide-react";
 import { Team, User } from "@prisma/client";
 import { useToast } from "@/hooks/use-toast";
 import {

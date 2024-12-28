@@ -9,6 +9,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 
 export default function Login() {
@@ -16,6 +17,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const {toast} = useToast();
 
   const handleSignIn = async () => {
     try {
@@ -30,6 +32,10 @@ export default function Login() {
         console.error("Error:", result.error);
       } else {
         console.log("Successfully signed in!");
+        toast({
+          title: "Successfully signed in!",
+          description:"Loading Task Manager!",
+        })
         setLoading(false);
         router.push("/task-manager");
       }
@@ -47,11 +53,11 @@ export default function Login() {
           </div>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Employee ID</Label>
               <Input
                 id="email"
-                type="email"
-                placeholder="m@example.com"
+                type="text"
+                placeholder="AE23B039"
                 required
                 value={employeeId}
                 onChange={(e) => {

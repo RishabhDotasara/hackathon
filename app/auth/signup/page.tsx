@@ -34,7 +34,11 @@ export default function SignUp() {
           if (response.status == 200)
           {
             setLoading(false);
-            router.push("/task-manager")
+            toast({
+              title:"User Created!", 
+              description:"You can now login."
+            })
+            router.push("/auth/signin")
           }
           else 
           {
@@ -64,8 +68,8 @@ export default function SignUp() {
               <Label htmlFor="email">Employee Id</Label>
               <Input
                 id="email"
-                type="email"
-                placeholder="m@example.com"
+                type="text"
+                placeholder="AE23B039"
                 required
                 value={employeeId}
                 onChange={(e) => {
