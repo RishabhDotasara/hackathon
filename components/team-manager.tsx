@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
-import { Team, User } from "@prisma/client";
+import { Role, Team, User } from "@prisma/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -13,17 +13,19 @@ import {
 import { TeamForm } from "@/components/teams/TeamForm";
 import { CreateTeamDialog } from "@/components/teams/CreateTeamDialog";
 import { TeamTable } from "@/components/teams/TeamTable";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 
 export default function TeamManagementPage() {
   const [creatingTeam, setCreatingTeam] = useState("");
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const session = useSession();
   const { toast } = useToast();
+  const queryClient = useQueryClient()
 
   const handleCreateTeam = async () => {
     try {
@@ -35,7 +37,6 @@ export default function TeamManagementPage() {
       if (response.ok) {
         toast({ title: "Team created!" });
         setCreatingTeam("");
-        fetchTeams();
       }
     } catch (err) {
       console.error(err);
@@ -93,10 +94,14 @@ export default function TeamManagementPage() {
   const fetchTeams = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/teams/getAll");
+      const urls = {
+        "leader":`/api/teams/get-teams-by-leader?leaderId=${session.data?.userId}`,
+        "admin":"/api/teams/getAll"
+      }
+      const response = await fetch(session.data?.role === Role.ADMIN ? urls.admin : urls.leader);
       if (response.ok) {
         const data = await response.json();
-        setTeams(data.data);
+        return data.teams
       }
     } catch (err) {
       console.error(err);
@@ -114,7 +119,7 @@ export default function TeamManagementPage() {
       const response = await fetch("/api/user/getAll");
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
+        return data
       }
     } catch (err) {
       console.error(err);
@@ -125,18 +130,28 @@ export default function TeamManagementPage() {
     }
   };
 
-  useEffect(() => {
-    fetchTeams();
-    fetchUsers();
-  }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  const allUsersQuery = useQuery({
+    queryKey:["users", "all"],
+    queryFn: fetchUsers,
+    staleTime:5*60*1000
+  })
+
+  const fetchTeamsQuery = useQuery({
+    queryKey:['teams', 'all'],
+    queryFn:fetchTeams,
+    staleTime:5*60*1000,
+    enabled: Boolean(session.data?.userId)
+  })
+
+  const createTeamMutation = useMutation({
+    mutationKey:['createTeam'],
+    mutationFn:handleCreateTeam,
+    onSuccess: ()=>{
+      queryClient.invalidateQueries({queryKey:['teams', 'all']})
+    }
+  })
+
 
   return (
     <div className="container mx-auto p-4">
@@ -148,16 +163,18 @@ export default function TeamManagementPage() {
         <CardContent>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Existing Teams</h2>
-            <CreateTeamDialog
+            {session && session.data?.role == Role.ADMIN &&<CreateTeamDialog
               onSubmit={handleCreateTeam}
               setName={setCreatingTeam}
               name={creatingTeam}
               disabled={isCreatingTeam}
-            />
+            />}
           </div>
           <TeamTable
-            teams={teams}
+            isLoading={fetchTeamsQuery.isLoading}
+            teams={fetchTeamsQuery.data || []}
             onEdit={setEditingTeam}
+            teamCreating={createTeamMutation.isSuccess || false}
             onDelete={handleDeleteTeam}
             isDeleting={isDeleting}
           />
@@ -173,7 +190,7 @@ export default function TeamManagementPage() {
             <TeamForm
               onSubmit={handleUpdateTeam}
               teamData={editingTeam}
-              users={users}
+              users={allUsersQuery.data || []}
               disabled={isUpdating}
             />
           </CardContent>

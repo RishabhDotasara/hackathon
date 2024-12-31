@@ -9,12 +9,15 @@ import {
 } from "@/components/ui/table";
 import { Team } from "@prisma/client";
 import { Loader2, Pencil, Trash } from "lucide-react";
+import TeamTableRow from "./TeamTableRow";
+import TeamTableRowSkeleton from "./TeamTableRowSkeleton";
 
 interface TeamTableProps {
   teams: Team[];
   onEdit: (team: Team) => void;
   onDelete: (teamId: string) => void;
   isDeleting: boolean;
+  teamCreating:boolean
 }
 
 export function TeamTable({
@@ -22,6 +25,7 @@ export function TeamTable({
   onEdit,
   onDelete,
   isDeleting,
+  teamCreating
 }: TeamTableProps) {
   return (
     <Table>
@@ -34,36 +38,18 @@ export function TeamTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {teams.map((team: Team) => (
-          <TableRow key={team.id}>
-            <TableCell>{team.name}</TableCell>
-            <TableCell>{team.members.length} members</TableCell>
-            <TableCell>{team.leaders.length} leaders</TableCell>
-            <TableCell>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onEdit(team)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onDelete(team.teamId)}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+        {isLoading ? (
+          <>
+        <TeamTableRowSkeleton />
+        <TeamTableRowSkeleton />
+        <TeamTableRowSkeleton />
+          </>
+        ) : (
+          teams.map((team: Team) => (
+        <TeamTableRow isLoading={false} team={team} onEdit={onEdit} key={team.teamId} />
+          ))
+        )}
+        {teamCreating && <TeamTableRowSkeleton/>}
       </TableBody>
     </Table>
   );

@@ -9,10 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface CreateTeamDialogProps {
-  onSubmit: () => void;
+  onSubmit:  () => Promise<void>;
   setName: (name: string) => void;
   name: string;
   disabled: boolean;
@@ -24,8 +27,27 @@ export function CreateTeamDialog({
   name,
   disabled,
 }: CreateTeamDialogProps) {
+
+
+  const [open, setOpen] = useState(false);
+  const {toast} = useToast();
+  const queryClient = useQueryClient();
+
+  const createTeamMutation = useMutation({
+    mutationKey:['createTeam'],
+    mutationFn:onSubmit,
+    onSuccess: ()=>{
+      toast({title:"Team created!"});
+      setName("");
+      setOpen(false);
+      queryClient.invalidateQueries({queryKey:['teams','all']})
+    }
+  })
+
+
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default">Add New Team</Button>
       </DialogTrigger>
@@ -47,7 +69,7 @@ export function CreateTeamDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onSubmit} disabled={disabled}>
+          <Button onClick={()=>{createTeamMutation.mutate()}} disabled={disabled}>
             Create Team
             {disabled && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
           </Button>

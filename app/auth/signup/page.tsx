@@ -1,61 +1,72 @@
 "use client"
+
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Loader } from 'lucide-react'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useState } from "react"
-import { Loader } from "lucide-react"
-import { useRouter } from "next/navigation"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { useToast } from "@/hooks/use-toast"
+import { SignUpFormValues, signUpSchema } from "@/types/signUpTypes"
+
 
 export const description =
-  "A login page with two columns. The first column has the login form with email and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image."
+  "A signup page with two columns. The first column has the signup form with employee ID, username, email, and password. There's a link to sign in if you already have an account. The second column has a cover image."
 
 export default function SignUp() {
-
-  const [employeeId, setEmployeeId] = useState("")
-  const [password, setPassword] = useState("")
-  const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
-  const router = useRouter();
-  const {toast} = useToast()
+  const router = useRouter()
+  const { toast } = useToast()
 
-  const createuser = async ()=>{
-    try 
-    {
+  const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      employeeId: "",
+      username: "",
+      email: "",
+      password: "",
+    },
+  })
+
+  const createUser = async (values: SignUpFormValues) => {
+    try {
       setLoading(true)
-        fetch("/api/signup", {
-          method:"POST", 
-          body:JSON.stringify({employeeId, password, username})
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        body: JSON.stringify(values),
+      })
+
+      if (response.status === 200) {
+        setLoading(false)
+        toast({
+          title: "User Created!",
+          description: "You can now login.",
         })
-        .then(response=>{
-          if (response.status == 200)
-          {
-            setLoading(false);
-            toast({
-              title:"User Created!", 
-              description:"You can now login."
-            })
-            router.push("/auth/signin")
-          }
-          else 
-          {
-            toast({
-              title:"Error Creating User!", 
-              description:"Try Again."
-            })
-          }
+        router.push("/auth/signin")
+      } else {
+        toast({
+          title: "Error Creating User!",
+          description: "Try Again.",
         })
-       
-    }
-    catch(err)
-    {
+      }
+    } catch (err) {
       setLoading(false)
       console.log("Error in server!")
     }
   }
+
   return (
     <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
       <div className="flex items-center justify-center py-12">
@@ -63,59 +74,66 @@ export default function SignUp() {
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Signup</h1>
           </div>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Employee Id</Label>
-              <Input
-                id="email"
-                type="text"
-                placeholder="AE23B039"
-                required
-                value={employeeId}
-                onChange={(e) => {
-                  setEmployeeId(e.target.value);
-                }}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(createUser)} className="grid gap-4">
+              <FormField
+                control={form.control}
+                name="employeeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="AE23B039" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="cheeky boi"
-                required
-                value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                }}
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input placeholder="cheeky boi" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              onClick={() => {
-                createuser();
-              }}
-              disabled={loading}
-            >
-              SignUp
-              {loading && <Loader className="animate-spin ml-2" />}
-            </Button>
-          </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="********" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={loading}>
+                SignUp
+                {loading && <Loader className="animate-spin ml-2" />}
+              </Button>
+            </form>
+          </Form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link href="/auth/signin" className="underline">
@@ -133,5 +151,6 @@ export default function SignUp() {
         />
       </div>
     </div>
-  );
+  )
 }
+

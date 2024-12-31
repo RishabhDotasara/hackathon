@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState } from "react";
 import { Loader, Users, Users2 } from "lucide-react";
 import { Team, User } from "@prisma/client";
@@ -12,6 +13,9 @@ import {
 import { TeamForm } from "@/components/teams/TeamForm";
 import { CreateTeamDialog } from "@/components/teams/CreateTeamDialog";
 import { TeamTable } from "@/components/teams/TeamTable";
+import { useRouter } from "next/navigation";
+
+export const dynamic = 'force-dynamic'
 
 export default function TeamManagementPage() {
   const [creatingTeam, setCreatingTeam] = useState("");
@@ -23,6 +27,9 @@ export default function TeamManagementPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+
+  
 
   const handleCreateTeam = async () => {
     try {

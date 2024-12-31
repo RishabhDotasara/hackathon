@@ -1,48 +1,89 @@
-"use client";
-import Image from "next/image";
-import Link from "next/link";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Loader } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { signIn, useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader } from 'lucide-react'
+
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { useToast } from "@/hooks/use-toast"
+import { LoginFormValues, loginSchema } from "@/types/signInTypes"
 
 
 export default function Login() {
-  const [employeeId, setEmployeeId] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const {toast} = useToast();
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+  const session = useSession()
 
-  const handleSignIn = async () => {
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      employeeId: "",
+      password: "",
+    },
+  })
+
+  const handleSignIn = async (values: LoginFormValues) => {
     try {
-      setLoading(true);
+      setLoading(true)
       const result = await signIn("credentials", {
         redirect: false,
-        employeeId: employeeId,
-        password: password,
-      });
+        employeeId: values.employeeId,
+        password: values.password,
+      })
+
       if (result?.error) {
-        setLoading(false);
-        console.error("Error:", result.error);
+        setLoading(false)
+        console.error("Error:", result.error)
+        toast({
+          title: "Incorrect Credentials or Slow Internet!",
+          description: "Try Again!",
+          variant: "destructive",
+        })
+      } else if (!result) {
+        toast({
+          title: "Incorrect Credentials or Slow Internet!",
+          description: "Try Again!",
+          variant: "destructive",
+        })
       } else {
-        console.log("Successfully signed in!");
+        console.log("Successfully signed in!")
         toast({
           title: "Successfully signed in!",
-          description:"Loading Task Manager!",
+          description: "Loading Task Manager!",
         })
-        setLoading(false);
-        router.push("/task-manager");
+        setLoading(false)
+        router.push("/task-manager")
       }
     } catch (error) {
-      console.error("Sign-in error", error);
+      console.error("Sign-in error", error)
+      toast({
+        title: "Error Signing in!",
+        description: "Try Again!",
+      })
     }
-  };
+  }
+
+
+  useEffect(()=>{
+    if (session.status === "authenticated") {
+      router.push("/task-manager");
+    }
+  })
 
   return (
     <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
@@ -51,52 +92,48 @@ export default function Login() {
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Login</h1>
           </div>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Employee ID</Label>
-              <Input
-                id="email"
-                type="text"
-                placeholder="AE23B039"
-                required
-                value={employeeId}
-                onChange={(e) => {
-                  setEmployeeId(e.target.value);
-                }}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSignIn)} className="grid gap-4">
+              <FormField
+                control={form.control}
+                name="employeeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="AE23B039" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center">
+                      <FormLabel>Password</FormLabel>
+                      <Link
+                        href="/forgot-password"
+                        className="ml-auto inline-block text-sm underline"
+                      >
+                        Forgot your password?
+                      </Link>
+                    </div>
+                    <FormControl>
+                      <Input type="password" placeholder="Password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              onClick={() => {
-                handleSignIn();
-              }}
-              disabled={loading}
-            >
-              Login
-              {loading && <Loader className="animate-spin ml-2" />}
-            </Button>
-          </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                Login
+                {loading && <Loader className="ml-2 animate-spin" />}
+              </Button>
+            </form>
+          </Form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="underline">
@@ -114,5 +151,6 @@ export default function Login() {
         />
       </div>
     </div>
-  );
+  )
 }
+

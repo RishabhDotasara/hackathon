@@ -8,9 +8,8 @@ export async function DELETE(req:NextRequest)
     try 
     {
         const prisma = new PrismaClient();
-        const url = new URL(req.url)
-        const teamId = url.searchParams.get("teamId") || "";
-        
+        const body = await req.json();
+        const teamId = body.teamId;
         await prisma.team.delete({
             where:{
                 teamId:teamId

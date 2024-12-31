@@ -17,7 +17,8 @@ export async function POST(request:NextRequest)
             data:{
                 employeeId:employeeId,
                 password:hashedPassword,
-                username:body.username
+                username:body.username,
+                email:body.email
             }
         })
 

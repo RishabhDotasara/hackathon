@@ -30,6 +30,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { useRecoilState, useRecoilValue } from "recoil";
 import { teamAtom } from "@/states/teamAtom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
 
 const statusColors = {
   PENDING: "bg-red-500 text-white",
@@ -43,20 +44,25 @@ const chartColors = {
   COMPLETED: "#4ade80",
 };
 
+const deadlineRanges = {
+  "all": "All",
+  "today": "Due Today",
+  "week": "Due This Week",
+  "overdue": "Overdue",
+};
+
 export default function HomePage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
   const session = useSession();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isTasksLoading, setIsTasksLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
-  const [userToFilter, setUserToFilter] = useState("")
-  const [users, setUsers] = useState<User[]>()
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [userToFilter, setUserToFilter] = useState("");
+  const [statusToFilter, setStatusToFilter] = useState("");
+  const [deadlineFilter, setDeadlineFilter] = useState("all");
   const [currentTeamId, setCurrentTeamId] = useRecoilState(teamAtom);
 
   const fetchTasks = async () => {
     try {
-      setIsTasksLoading(true);
       console.log(session);
       const urls = [
         `/api/task/getAll?teamId=${currentTeamId}`,
@@ -64,17 +70,14 @@ export default function HomePage() {
       ];
       const response = await fetch(session.data?.role != Role.MEMBER ? urls[0] : urls[1]);
       const data = await response.json();
-      console.log(data);
-      setTasks(Array.isArray(data) ? data : []);
       setFilteredTasks(Array.isArray(data) ? data : []);
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast({
         title: "Error, please reload the page.",
       });
-    } finally {
-      setIsTasksLoading(false);
-    }
+    } 
   };
 
   const getUsers = async () => {
@@ -83,70 +86,109 @@ export default function HomePage() {
       const response = await fetch("/api/users/getAll");
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.users)
+        return data.users;
       }
     } catch (err) {
       console.log(err);
       toast({
         title: "Error Fetching Users",
         variant: "destructive"
-      })
+      });
     }
-  }
+  };
 
   const filterTasks = async () => {
     try {
-      if (userToFilter == "") {
-        setFilteredTasks(tasks)
-        return;
+      if (!tasksQuery.data) return;
+      let filtered = [...tasksQuery.data] as Task[];
+
+      // User filter
+      if (userToFilter) {
+        filtered = filtered.filter((task: Task) => task.assigneeId === userToFilter);
       }
-      const filtered = tasks.filter((task: Task) => task.assigneeId == userToFilter)
-      setFilteredTasks(filtered)
+
+      // Status filter
+      if (statusToFilter) {
+        filtered = filtered.filter((task: Task) => task.status === statusToFilter);
+      }
+
+      // Deadline filter
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekEnd = new Date(today);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+
+      switch (deadlineFilter) {
+        case "today":
+          filtered = filtered.filter((task: Task) => {
+            const deadline = new Date(task.deadline);
+            return deadline >= today && deadline < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+          });
+          break;
+        case "week":
+          filtered = filtered.filter((task: Task) => {
+            const deadline = new Date(task.deadline);
+            return deadline >= today && deadline <= weekEnd;
+          });
+          break;
+        case "overdue":
+          filtered = filtered.filter((task: Task) => new Date(task.deadline) < today);
+          break;
+        case "future":
+          filtered = filtered.filter((task: Task) => new Date(task.deadline) > weekEnd);
+          break;
+      }
+
+      setFilteredTasks(filtered);
     } catch (err) {
       console.log("Error");
       toast({
-        title: "Error , Please Refresh The Page.",
+        title: "Error, Please Refresh The Page.",
         variant: "destructive"
-      })
+      });
     }
-  }
+  };
+
+  const tasksQuery = useQuery({
+    queryKey: ["tasks", currentTeamId],
+    queryFn: fetchTasks,
+    enabled: session.status === "authenticated" && Boolean(currentTeamId.length > 2),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const usersQuery = useQuery({
+    queryKey: ['users', currentTeamId],
+    queryFn: getUsers,
+    enabled: Boolean(tasksQuery.data),
+    staleTime: 10 * 60 * 1000 
+  });
 
   useEffect(() => {
-    if (session.status == "authenticated") {
-      fetchTasks();
-      getUsers();
-    }
-    setIsLoading(false);
-  }, [session.status, currentTeamId]);
-
-  useEffect(() => {
-    filterTasks()
-  }, [userToFilter, tasks])
+    filterTasks();
+  }, [userToFilter, statusToFilter, deadlineFilter, tasksQuery.data]);
 
   const chartData = useMemo(() => {
     return [
       {
         status: "PENDING",
-        count: filteredTasks.filter((task: any) => task.status === "PENDING").length,
+        count: filteredTasks.filter((task: Task) => task.status === "PENDING").length,
       },
       {
         status: "INPROGRESS",
-        count: filteredTasks.filter((task: any) => task.status === "INPROGRESS").length,
+        count: filteredTasks.filter((task: Task) => task.status === "INPROGRESS").length,
       },
       {
         status: "COMPLETED",
-        count: filteredTasks.filter((task: any) => task.status === "COMPLETED").length,
+        count: filteredTasks.filter((task: Task) => task.status === "COMPLETED").length,
       },
     ];
   }, [filteredTasks]);
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex justify-center h-screen">
-  //       <Loader className="animate-spin h-8 w-8" />
-  //     </div>
-  //   )
-  // }
+  const clearFilters = () => {
+    setUserToFilter("");
+    setStatusToFilter("");
+    setDeadlineFilter("all");
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -163,13 +205,13 @@ export default function HomePage() {
               <TaskDialog
                 trigger={<Button variant="outline">Add Task</Button>}
                 triggerFunc={fetchTasks}
-                tasks={tasks}
-                all={users}
+                tasks={tasksQuery.data}
+                all={usersQuery.data || []}
               />
             )}
           </CardHeader>
           <CardContent>
-            {isTasksLoading ? (
+            {tasksQuery.isLoading ? (
               <Skeleton className="w-full h-[300px]" />
             ) : (
               <ResponsiveContainer width="100%" height={300}>
@@ -195,30 +237,74 @@ export default function HomePage() {
           <CardHeader>
             <CardTitle>Task List</CardTitle>
             <CardDescription>Tasks To Work On</CardDescription>
-            {session.data?.role != Role.MEMBER && session.status == "authenticated" && (
-              <div className="flex gap-2">
-                <Select onValueChange={(value) => { setUserToFilter(value) }} value={userToFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select a User" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Assigned To</SelectLabel>
-                      {users && users.map((user: User) => (
-                        <SelectItem key={user.userId} value={user.userId}>
-                          {user.username} | {user.employeeId.toUpperCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {userToFilter && <Button variant={"outline"} onClick={() => { setUserToFilter("") }}><X className="h-5 w-5" /></Button>}
-              </div>
-            )}
+            <div className="space-y-4">
+              {session.data?.role != Role.MEMBER && session.status == "authenticated" && (
+                <div className="flex flex-wrap gap-2">
+                  <Select onValueChange={(value) => setUserToFilter(value)} value={userToFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Assigned To</SelectLabel>
+                        {(usersQuery.data || []).map((user: User) => (
+                          <SelectItem key={user.userId} value={user.userId}>
+                            {user.username} | {user.employeeId.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+
+                  <Select onValueChange={(value) => setStatusToFilter(value)} value={statusToFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Status</SelectLabel>
+                        {Object.keys(statusColors).map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+
+                  <Select onValueChange={(value) => setDeadlineFilter(value)} value={deadlineFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by deadline" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Deadline</SelectLabel>
+                        {Object.entries(deadlineRanges).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+
+                  {(userToFilter || statusToFilter || deadlineFilter !== "all") && (
+                    <Button 
+                      variant="outline" 
+                      onClick={clearFilters}
+                      className="flex items-center gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[300px] w-full rounded-md border overflow-y-auto p-2">
-              {isTasksLoading ? (
+              {tasksQuery.isLoading ? (
                 <div className="space-y-2">
                   {[...Array(5)].map((_, index) => (
                     <Skeleton key={index} className="w-full h-16" />
@@ -226,7 +312,11 @@ export default function HomePage() {
                 </div>
               ) : (
                 <ul className="space-y-4 overflow-auto">
-                  {filteredTasks.length == 0 && (<span className="text-gray-300 text-center">No Task</span>)}
+                  {filteredTasks.length === 0 && (
+                    <div className="text-center text-muted-foreground py-8">
+                      No tasks match the selected filters
+                    </div>
+                  )}
                   {filteredTasks.map((task: Task) => (
                     <li
                       key={task.taskId}
@@ -260,5 +350,4 @@ export default function HomePage() {
         </Card>
       </div>
     </div>
-  );
-}
+  )};

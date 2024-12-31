@@ -6,6 +6,7 @@ import Session from "@/providers/session-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import RecoilProvider from "@/providers/recoil-provider";
+import ReactQueryProvider from "@/providers/react-query-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,7 +42,7 @@ export default function RootLayout({
             <RecoilProvider>
               <TooltipProvider>
                 <Toaster />
-                {children}
+                <ReactQueryProvider>{children}</ReactQueryProvider>
               </TooltipProvider>
             </RecoilProvider>
           </ThemeProvider>

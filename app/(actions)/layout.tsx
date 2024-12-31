@@ -13,8 +13,14 @@ import { ModeToggle } from "@/components/theme-toggle";
 import { NavigationLinks } from "@/components/layout/navigation-links";
 import { TeamSelector } from "@/components/layout/team-selector";
 import { UserMenu } from "@/components/layout/user-menu";
+import { useQuery } from "@tanstack/react-query";
+import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = useSession();
   const router = useRouter();
   const { toast } = useToast();
@@ -23,36 +29,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [currentTeam, setCurrentTeam] = useRecoilState(teamAtom);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (session.status === "unauthenticated") {
-      router.push("/auth/signin");
-      toast({
-        title: "Please Login Again!",
-        description: "Session Expired!",
-      });
-    } else if (session.status === "authenticated") {
-      fetchTeams();
-    }
-  }, [session.status]);
-
   const fetchTeams = async () => {
     try {
-      setIsLoading(true);
       const res = await fetch(`/api/user/get?userId=${session.data?.userId}`);
       const data = await res.json();
       setUser(data);
       if (data.teams) {
         setTeams(data.teams);
-        if (data.teams.length > 0)
-        {
-          setCurrentTeam(data.teams[0].id);
-        }
-        else 
-        {
+        if (data.teams.length > 0) {
+          setCurrentTeam(data.teams[0].teamId);
+        } else {
           toast({
             title: "No Teams Found!",
             description: "You are not part of any team!",
-          })
+          });
         }
       }
     } catch (error) {
@@ -62,10 +52,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         description: "Failed to fetch teams",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const teamsQuery = useQuery({
+    queryKey: ["teams", session.data?.userId],
+    queryFn: fetchTeams,
+    enabled: session.status === "authenticated",
+    staleTime: 5 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    if (session.status === "unauthenticated") {
+      router.push("/auth/signin");
+      toast({
+        title: "Please Login Again!",
+        description: "Session Expired!",
+      });
+    }
+  }, [session.status]);
 
   const handleLogOut = async () => {
     try {
@@ -85,6 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   return (
+    <>
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       {/* Sidebar */}
       <div className="hidden border-r bg-background md:block">
@@ -111,7 +117,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+              <Button
+                variant="outline"
+                size="icon"
+                className="shrink-0 md:hidden"
+              >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
@@ -141,5 +151,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </div>
+    <ReactQueryDevtools initialIsOpen/>
+    </>
   );
 }

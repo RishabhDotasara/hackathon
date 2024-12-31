@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
     });
     prisma.$disconnect();
     return NextResponse.json(
-      { message: "Teams Fetched", data: teams },
+      { message: "Teams Fetched", teams: teams },
       { status: 200 }
     );
   } catch (er) {
