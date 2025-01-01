@@ -1,7 +1,7 @@
 import { PrismaClient, User } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     const prisma = new PrismaClient();
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
         name: body.name,
       },
     });
-
+    await prisma.$disconnect();
     return NextResponse.json({ message: "Team Created" }, { status: 200 });
   } catch (err) {
     return NextResponse.json(

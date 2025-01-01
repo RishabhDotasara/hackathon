@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,9 @@ import { NavigationLinks } from "@/components/layout/navigation-links";
 import { TeamSelector } from "@/components/layout/team-selector";
 import { UserMenu } from "@/components/layout/user-menu";
 import { useQuery } from "@tanstack/react-query";
-import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools/build/modern/production.js";
+
+
 
 export default function DashboardLayout({
   children,
@@ -28,6 +30,15 @@ export default function DashboardLayout({
   const setUser = useSetRecoilState(userAtom);
   const [currentTeam, setCurrentTeam] = useRecoilState(teamAtom);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDevTools, setShowDevtools] = useState(false);
+
+  const ReactQueryDevtoolsProduction = React.lazy(() =>
+    import('@tanstack/react-query-devtools/build/modern/production.js').then(
+      (d) => ({
+        default: d.ReactQueryDevtools,
+      }),
+    ),
+  )
 
   const fetchTeams = async () => {
     try {
@@ -71,6 +82,12 @@ export default function DashboardLayout({
       });
     }
   }, [session.status]);
+
+  
+  useEffect(() => {
+    // @ts-ignore
+    window.toggleDevtools = () => setShowDevtools((old) => !old);
+  }, []);
 
   const handleLogOut = async () => {
     try {
@@ -151,7 +168,12 @@ export default function DashboardLayout({
         </main>
       </div>
     </div>
-    <ReactQueryDevtools initialIsOpen/>
+    <ReactQueryDevtools initialIsOpen />
+      {showDevTools && (
+        <Suspense fallback={null}>
+          <ReactQueryDevtoolsProduction />
+        </Suspense>
+      )}
     </>
   );
 }

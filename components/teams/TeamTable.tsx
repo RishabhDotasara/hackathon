@@ -17,6 +17,7 @@ interface TeamTableProps {
   onEdit: (team: Team) => void;
   onDelete: (teamId: string) => void;
   isDeleting: boolean;
+  isLoading:boolean;
   teamCreating:boolean
 }
 
@@ -25,6 +26,7 @@ export function TeamTable({
   onEdit,
   onDelete,
   isDeleting,
+  isLoading,
   teamCreating
 }: TeamTableProps) {
   return (

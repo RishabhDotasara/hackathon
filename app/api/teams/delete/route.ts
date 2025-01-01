@@ -15,7 +15,7 @@ export async function DELETE(req:NextRequest)
                 teamId:teamId
             }
         })
-
+        await prisma.$disconnect();
         return NextResponse.json({message:"Team Deleted"},{status:200})
     }
     catch(err)

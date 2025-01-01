@@ -35,13 +35,13 @@ export function NavigationLinks({
         </Link>
       )}
 
-      <Link
+      {/* <Link
         href="/session-scheduler"
         className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
       >
         <PresentationIcon className={iconClassName} />
         Sessions
-      </Link>
+      </Link> */}
 
       {/* <Link href="/leaderboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
         <List className={iconClassName} />

@@ -32,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="min-h-screen antialiased">
+      <ReactQueryProvider>
         <Session>
           <ThemeProvider
             attribute="class"
@@ -42,11 +43,12 @@ export default function RootLayout({
             <RecoilProvider>
               <TooltipProvider>
                 <Toaster />
-                <ReactQueryProvider>{children}</ReactQueryProvider>
+                {children}
               </TooltipProvider>
             </RecoilProvider>
           </ThemeProvider>
         </Session>
+        </ReactQueryProvider>
       </body>
     </html>
   );
